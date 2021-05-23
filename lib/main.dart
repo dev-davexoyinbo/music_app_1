@@ -13,6 +13,7 @@ class MyApp extends StatelessWidget {
       home: HomeScreen(),
       theme: ThemeData(
         fontFamily: 'Montserrat',
+        visualDensity: VisualDensity.adaptivePlatformDensity,
         textTheme: TextTheme(
           bodyText1: TextStyle(),
           bodyText2: TextStyle(),
