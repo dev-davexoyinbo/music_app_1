@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:music_app_trial_1/my_theme.dart';
+import 'package:music_app_trial_1/widgets/music_detail_sheet.dart';
 import 'package:music_app_trial_1/widgets/my_sliver_app_bar.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -36,21 +37,30 @@ class _HomeScreenState extends State<HomeScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: MyTheme.darkColor,
-      body: NestedScrollView(
-        physics: BouncingScrollPhysics(),
-        headerSliverBuilder: (context, isScrolled) {
-          return [
-            MySliverAppBar(tabController: _tabController, myTabs: _myTabs,),
-          ];
-        },
-        body: TabBarView(
-          controller: _tabController,
+      body: SizedBox.expand(
+        child: Stack(
           children: [
-            Center(
-              child: Text("Tab one"),
+            NestedScrollView(
+              // physics: BouncingScrollPhysics(),
+              headerSliverBuilder: (context, isScrolled) {
+                return [
+                  MySliverAppBar(tabController: _tabController, myTabs: _myTabs,),
+                ];
+              },
+              body: TabBarView(
+                controller: _tabController,
+                children: [
+                  Center(
+                    child: Text("Tab one"),
+                  ),
+                  Center(
+                    child: Text("Tab two")
+                  )
+                ],
+              ),
             ),
-            Center(
-              child: Text("Tab two")
+            SizedBox.expand(
+              child: MusicDetailSheet(),
             )
           ],
         ),
