@@ -10,7 +10,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: HomeScreen(),
       theme: ThemeData(
         fontFamily: 'Montserrat',
         visualDensity: VisualDensity.adaptivePlatformDensity,
@@ -22,6 +21,7 @@ class MyApp extends StatelessWidget {
           displayColor: Colors.white,
         ),
       ),
+      home: HomeScreen(),
     );
   } //end build method
 } //end class MyApp
