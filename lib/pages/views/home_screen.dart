@@ -17,9 +17,10 @@ class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   List<Tab> _myTabs = [
-    Tab(text: "Commercial"),
-    Tab(text: "Free license"),
+    Tab(text: "Tracks"),
+    Tab(text: "Albums"),
   ];
+  bool showMediaSheet = false;
 
   @override
   void initState() {
@@ -44,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen>
               // physics: BouncingScrollPhysics(),
               headerSliverBuilder: (context, isScrolled) {
                 return [
-                  MySliverAppBar(tabController: _tabController, myTabs: _myTabs,),
+                  MySliverAppBar(tabController: _tabController, myTabs: _myTabs),
                 ];
               },
               body: TabBarView(
@@ -59,8 +60,13 @@ class _HomeScreenState extends State<HomeScreen>
                 ],
               ),
             ),
-            SizedBox.expand(
-              child: MusicDetailSheet(),
+            AnimatedPositioned(
+              duration: Duration(milliseconds: 500),
+              curve: Curves.easeInOut,
+              top: showMediaSheet ? 65 :  MediaQuery.of(context).size.height,
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height - 65,
+              child: MusicDetailSheet(displayMediaSheetAction: _displayMediaSheetAction,),
             )
           ],
         ),
@@ -68,11 +74,9 @@ class _HomeScreenState extends State<HomeScreen>
     );
   } //end build method
 
-  Widget _renderDummyList() {
-    return ListView.builder(itemBuilder: (_, index) {
-      return Container(
-        child: Text("List ${index + 1}")
-      );
+  void _displayMediaSheetAction(bool showMediaSheet){
+    setState(() {
+      this.showMediaSheet = !this.showMediaSheet;
     });
-  }
+  }//end method _displayMediaSheet
 } //end state class

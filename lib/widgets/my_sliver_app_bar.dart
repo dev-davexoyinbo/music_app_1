@@ -5,7 +5,6 @@ class MySliverAppBar extends StatefulWidget {
   late final TabController _tabController;
   late final List<Tab> _myTabs;
 
-
   MySliverAppBar({Key? key, required TabController tabController, required List<Tab> myTabs}): super(key: key){
     this._tabController = tabController;
     this._myTabs = myTabs;
@@ -27,9 +26,11 @@ class _MySliverAppBarState extends State<MySliverAppBar> {
       snap: true,
       collapsedHeight: 56,
       shadowColor: Colors.white.withAlpha(70),
-      leading: Icon(
-        Icons.polymer,
-        color: MyTheme.accentColor,
+      leading: GestureDetector(
+        child: Icon(
+          Icons.polymer,
+          color: MyTheme.accentColor,
+        ),
       ),
       actions: [
         Container(
