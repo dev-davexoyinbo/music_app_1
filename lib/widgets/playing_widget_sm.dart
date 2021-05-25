@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:music_app_trial_1/controllers/main_controller.dart';
 
 class PlayingWidgetSm extends StatelessWidget {
 
-  late final Function _displayMediaSheetAction;
-  PlayingWidgetSm({Key? key, Function? displayMediaSheetAction}) : super(key: key){
-    this._displayMediaSheetAction = displayMediaSheetAction ?? (bool val){};
-  }
+  PlayingWidgetSm({Key? key}) : super(key: key);
+
+  final MainController mainController = Get.find<MainController>();
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +18,7 @@ class PlayingWidgetSm extends StatelessWidget {
           Expanded(
             child: GestureDetector(
               onTap: (){
-                _displayMediaSheetAction(true);
+                mainController.displayMediaSheetAction(true);
               },
               child: Container(
                 color: Colors.transparent,

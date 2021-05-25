@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:music_app_trial_1/controllers/home_controller.dart';
 import 'package:music_app_trial_1/my_theme.dart';
 
 class MySliverAppBar extends StatefulWidget {
   late final TabController _tabController;
-  late final List<Tab> _myTabs;
 
-  MySliverAppBar({Key? key, required TabController tabController, required List<Tab> myTabs}): super(key: key){
+  MySliverAppBar({Key? key, required TabController tabController}): super(key: key){
     this._tabController = tabController;
-    this._myTabs = myTabs;
   }
 
   @override
@@ -15,6 +15,8 @@ class MySliverAppBar extends StatefulWidget {
 }
 
 class _MySliverAppBarState extends State<MySliverAppBar> {
+  final HomeController homeController = Get.find<HomeController>();
+
   @override
   Widget build(BuildContext context) {
     return SliverAppBar(
@@ -113,7 +115,7 @@ class _MySliverAppBarState extends State<MySliverAppBar> {
       bottom: TabBar(
         controller: widget._tabController,
         indicatorColor: MyTheme.accentColor,
-        tabs: widget._myTabs,
+        tabs: homeController.homeTabs,
       ),
     );
   }

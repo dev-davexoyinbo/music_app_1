@@ -1,7 +1,9 @@
-import 'dart:ui';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:music_app_trial_1/controllers/home_controller.dart';
+import 'package:music_app_trial_1/controllers/main_controller.dart';
+import 'package:music_app_trial_1/controllers/music_controller.dart';
 import 'package:music_app_trial_1/my_theme.dart';
 import 'package:music_app_trial_1/widgets/music_detail_sheet.dart';
 import 'package:music_app_trial_1/widgets/my_navbar.dart';
@@ -18,16 +20,13 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  List<Tab> _myTabs = [
-    Tab(text: "Tracks"),
-    Tab(text: "Albums"),
-  ];
-  bool showMediaSheet = false;
+  final MainController mainController = Get.find<MainController>();
+  final HomeController homeController = Get.find<HomeController>();
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(vsync: this, length: _myTabs.length);
+    _tabController = TabController(vsync: this, length: homeController.homeTabs.length);
   }
 
   @override
@@ -44,11 +43,10 @@ class _HomeScreenState extends State<HomeScreen>
         child: Stack(
           children: [
             NestedScrollView(
-              // physics: BouncingScrollPhysics(),
               headerSliverBuilder: (context, isScrolled) {
                 return [
                   MySliverAppBar(
-                      tabController: _tabController, myTabs: _myTabs),
+                      tabController: _tabController),
                 ];
               },
               body: TabBarView(
@@ -59,31 +57,30 @@ class _HomeScreenState extends State<HomeScreen>
                 ],
               ),
             ),
-            AnimatedPositioned(
-              duration: Duration(milliseconds: 500),
-              curve: Curves.easeInOut,
-              top: showMediaSheet ? 65 : MediaQuery.of(context).size.height,
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height - 65,
-              child: MusicDetailSheet(
-                displayMediaSheetAction: _displayMediaSheetAction,
-              ),
-            )
+            Obx(
+                () {
+                  return AnimatedPositioned(
+                    duration: Duration(milliseconds: 500),
+                    curve: Curves.easeInOut,
+                    top: mainController.showMediaSheet.value ? 65 : MediaQuery.of(context).size.height,
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height - 65,
+                    child: MusicDetailSheet(),
+                  );
+                }
+            ),
           ],
         ),
       ),
-      bottomNavigationBar: Visibility(
-        visible: !this.showMediaSheet,
-        maintainAnimation: true,
-        maintainState: true,
-        child: MyNavBar(displayMediaSheetAction: _displayMediaSheetAction),
-      ),
+      bottomNavigationBar: Obx(
+          ()  => Visibility(
+            visible: !mainController.showMediaSheet.value,
+            maintainAnimation: true,
+            maintainState: true,
+            child: MyNavBar(),
+          )
+      )
     );
   } //end build method
 
-  void _displayMediaSheetAction(bool showMediaSheet) {
-    setState(() {
-      this.showMediaSheet = !this.showMediaSheet;
-    });
-  } //end method _displayMediaSheet
 } //end state class

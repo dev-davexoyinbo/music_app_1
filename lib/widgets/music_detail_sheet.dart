@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:get/get.dart';
+import 'package:music_app_trial_1/controllers/main_controller.dart';
 import 'package:music_app_trial_1/my_theme.dart';
 
 class MusicDetailSheet extends StatefulWidget {
-  late Function _displayMediaSheetAction;
-
-  MusicDetailSheet({Key? key, required Function displayMediaSheetAction})
-      : super(key: key) {
-    this._displayMediaSheetAction = displayMediaSheetAction;
-  }
+  const MusicDetailSheet({
+    Key? key,
+  }) : super(key: key);
 
   @override
   _MusicDetailSheetState createState() => _MusicDetailSheetState();
@@ -18,8 +17,7 @@ class _MusicDetailSheetState extends State<MusicDetailSheet> {
   double _sliderValue = 20;
   late ScrollController scrollController;
 
-  @override
-  void initState() {}
+  final MainController mainController = Get.find<MainController>();
 
   @override
   Widget build(BuildContext context) {
@@ -39,8 +37,8 @@ class _MusicDetailSheetState extends State<MusicDetailSheet> {
           Padding(
             padding: const EdgeInsets.only(top: 12.0, left: 16, bottom: 4),
             child: GestureDetector(
-              onTap: (){
-                widget._displayMediaSheetAction(false);
+              onTap: () {
+                mainController.displayMediaSheetAction(false);
               },
               child: Container(
                 decoration: BoxDecoration(
