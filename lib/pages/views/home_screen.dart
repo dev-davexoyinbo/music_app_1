@@ -6,6 +6,7 @@ import 'package:music_app_trial_1/my_theme.dart';
 import 'package:music_app_trial_1/widgets/music_detail_sheet.dart';
 import 'package:music_app_trial_1/widgets/my_navbar.dart';
 import 'package:music_app_trial_1/widgets/my_sliver_app_bar.dart';
+import 'package:music_app_trial_1/widgets/tracks_tab.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -53,9 +54,7 @@ class _HomeScreenState extends State<HomeScreen>
               body: TabBarView(
                 controller: _tabController,
                 children: [
-                  Center(
-                    child: Text("Tab one"),
-                  ),
+                  TracksTab(),
                   Center(child: Text("Tab two"))
                 ],
               ),

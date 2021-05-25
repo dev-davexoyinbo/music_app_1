@@ -12,43 +12,48 @@ class PlayingWidgetSm extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        // mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          GestureDetector(
-            onTap: (){
-              _displayMediaSheetAction(true);
-            },
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                CircleAvatar(
-                  backgroundImage: AssetImage("assets/images/music_cover.jpg"),
-                ),
-                SizedBox(
-                  width: 10,
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          Expanded(
+            child: GestureDetector(
+              onTap: (){
+                _displayMediaSheetAction(true);
+              },
+              child: Container(
+                color: Colors.transparent,
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
                   children: [
-                    Text(
-                      "Pain",
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.grey[200],
-                        fontWeight: FontWeight.w500,
-                      ),
+                    CircleAvatar(
+                      backgroundImage: AssetImage("assets/images/music_cover.jpg"),
                     ),
-                    SizedBox(height: 3),
-                    Text(
-                      "Ryan Jones",
-                      style: TextStyle(
-                        color: Colors.grey[400],
-                        fontWeight: FontWeight.w300,
-                      ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Pain",
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey[300],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        SizedBox(height: 3),
+                        Text(
+                          "Ryan Jones",
+                          style: TextStyle(
+                            color: Colors.grey[400],
+                            fontWeight: FontWeight.w300,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
           Row(

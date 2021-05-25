@@ -22,8 +22,8 @@ class _MySliverAppBarState extends State<MySliverAppBar> {
       elevation: 5,
       expandedHeight: 56 * 2 + 180,
       pinned: true,
-      floating: true,
-      snap: true,
+      // floating: true,
+      // snap: true,
       collapsedHeight: 56,
       shadowColor: Colors.white.withAlpha(70),
       leading: GestureDetector(
