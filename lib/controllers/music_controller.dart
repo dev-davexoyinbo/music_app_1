@@ -11,6 +11,8 @@ class MusicController extends GetxController {
   final isPlaying = false.obs;
   final currentPlayTime = Duration().obs;
   final currentMaxTime = Duration().obs;
+  final _queue = <SongModel>[].obs;
+  final _queueType = QueueType.SONG.obs;
 
   MusicController() {
     _audioPlayer = AudioPlayer();
@@ -25,6 +27,10 @@ class MusicController extends GetxController {
     _audioPlayer.onDurationChanged.listen((Duration duration) {
       currentMaxTime.value = duration;
     });
+    _audioPlayer.onPlayerCompletion.listen((event) {
+      print("completed");
+      skipToNext();
+    });
   }
 
 
@@ -37,6 +43,7 @@ class MusicController extends GetxController {
     return songs
         .firstWhereOrNull((SongModel element) => element.id == _currentSongId);
   }
+
 
   Future<bool> requestPermission() async {
     bool val = false;
@@ -81,10 +88,14 @@ class MusicController extends GetxController {
     return playSong(song);
   }
 
-  Future<bool> playSong(SongModel song) async {
-    print("Playing: ${song.data}");
-    this._currentSongId++;
-    print(this._currentSongId);
+  Future<bool> playSong(SongModel? song, {QueueType? queueType}) async {
+    if(song == null)
+      return Future.value(false);
+
+    changeQueueType(queueType ?? QueueType.SONG);
+
+    if(_queue.firstWhereOrNull((SongModel element) => element.id == song.id) == null)
+      return Future.value(false);
 
     int success = await _audioPlayer.play(song.data, isLocal: true);
     if (success == 1) {
@@ -96,6 +107,7 @@ class MusicController extends GetxController {
     }
     return Future.value(false);
   } //end class playSong
+
 
   Future<bool> pauseSong() async {
     await _audioPlayer.pause();
@@ -111,6 +123,39 @@ class MusicController extends GetxController {
     this.isPlaying.value = true;
 
     return Future.value(true);
+  }
+
+  Future<bool> skipToNext() async {
+    SongModel? nextSong;
+
+    if(currentSong == null){
+      if(_queue.length != 0)
+        nextSong = _queue[0];
+    }else{
+      int index = _queue.indexOf(currentSong);
+      int nextIndex = (index + 1) % _queue.length;
+      nextSong = _queue[nextIndex];
+    }
+
+    return playSong(nextSong);
+  }
+
+  Future<bool> skipToPrevious() async {
+    SongModel? nextSong;
+
+    if(currentSong == null){
+      if(_queue.length != 0)
+        nextSong = _queue[0];
+    }else{
+      int index = _queue.indexOf(currentSong);
+      int nextIndex = (index - 1);
+      if(nextIndex < 0){
+        nextIndex = _queue.length + nextIndex;
+      }
+      nextSong = _queue[nextIndex];
+    }
+
+    return playSong(nextSong);
   }
 
   Future<bool> stopSong() async {
@@ -138,4 +183,22 @@ class MusicController extends GetxController {
                 : duration.inMilliseconds));
     return Future.value(true);
   } //end seek
+
+  void changeQueueType(QueueType queueType){
+    // if(_queueType.value == queueType)
+    //   return;
+
+    _queueType.value = queueType;
+
+    switch(_queueType.value){
+      case QueueType.SONG:
+        _queue.removeRange(0, _queue.length);
+        _queue.addAll(songs);
+        break;
+    }
+  }
 } //end class MusicController
+
+enum QueueType {
+  SONG, ALBUM, ARTIST, PLAYLIST
+}

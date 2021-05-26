@@ -31,8 +31,8 @@ class _TracksTabState extends State<TracksTab> {
                     String artist = song.artist;
 
                     return GestureDetector(
+                      behavior: HitTestBehavior.opaque,
                       onTap: (){
-                        print("Something is about to happen");
                         musicController.playSong(song);
                       },
                       child: Container(
