@@ -1,8 +1,12 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:music_app_trial_1/controllers/main_controller.dart';
+import 'package:music_app_trial_1/controllers/music_controller.dart';
 import 'package:music_app_trial_1/my_theme.dart';
+import 'package:music_app_trial_1/utils/my_time_utils.dart';
 
 class MusicDetailSheet extends StatefulWidget {
   const MusicDetailSheet({
@@ -14,10 +18,8 @@ class MusicDetailSheet extends StatefulWidget {
 }
 
 class _MusicDetailSheetState extends State<MusicDetailSheet> {
-  double _sliderValue = 20;
-  late ScrollController scrollController;
-
   final MainController mainController = Get.find<MainController>();
+  final MusicController musicController = Get.find<MusicController>();
 
   @override
   Widget build(BuildContext context) {
@@ -56,16 +58,38 @@ class _MusicDetailSheetState extends State<MusicDetailSheet> {
           SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Container(
-              height: 320,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(5),
-                image: DecorationImage(
-                  image: AssetImage("assets/images/music_cover.jpg"),
-                  fit: BoxFit.fill,
-                ),
-              ),
+            child: FutureBuilder<ImageProvider>(
+              future:
+                  musicController.getAudioImage(musicController.currentSong),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  // ImageProvider image = musicController.placeholderImage();
+                  // if (!snapshot.hasError) {
+                  //   image = snapshot.data as ImageProvider;
+                  // }
+                  return Container(
+                    height: 320,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      image: DecorationImage(
+                        image: snapshot.data as ImageProvider,
+                        fit: BoxFit.fill,
+                      ),
+                    ),
+                  );
+                } else {
+                  return Container(
+                    height: 320,
+                    width: double.infinity,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: MyTheme.accentColor,
+                      ),
+                    ),
+                  );
+                }
+              },
             ),
           ),
           SizedBox(height: 24),
@@ -77,10 +101,15 @@ class _MusicDetailSheetState extends State<MusicDetailSheet> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      "Pain",
-                      style:
-                          TextStyle(fontWeight: FontWeight.w500, fontSize: 24),
+                    GetBuilder<MusicController>(
+                      builder: (_) => Text(
+                        musicController.currentSong != null
+                            ? musicController.currentSong!.title
+                            : "",
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontWeight: FontWeight.w500, fontSize: 24),
+                      ),
                     ),
                     Row(
                       mainAxisSize: MainAxisSize.min,
@@ -97,50 +126,65 @@ class _MusicDetailSheetState extends State<MusicDetailSheet> {
                   ],
                 ),
                 SizedBox(height: 7),
-                Text(
-                  "Ryan Jones",
-                  style: TextStyle(color: MyTheme.darkColorLight2),
+                GetBuilder<MusicController>(
+                  builder: (_) => Text(
+                    musicController.currentSong != null
+                        ? musicController.currentSong!.artist
+                        : "",
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: MyTheme.darkColorLight2),
+                  ),
                 ),
                 SizedBox(
                   height: 10,
                 ),
                 SliderTheme(
                   data: SliderTheme.of(context).copyWith(
-                    trackHeight: 1,
+                    trackHeight: 2,
                     trackShape: _CustomTrackShape(),
                   ),
-                  child: Slider(
-                      value: _sliderValue,
-                      onChanged: (value) {
-                        setState(() {
-                          _sliderValue = value;
-                        });
-                      },
-                      label: "20",
-                      min: 0,
-                      max: 100,
-                      activeColor: Colors.grey[300],
-                      inactiveColor: Colors.grey[700]),
+                  child: Obx(
+                    () => Slider(
+                        value: musicController
+                            .currentPlayTime.value.inMilliseconds
+                            .toDouble(),
+                        onChanged: (value) async{
+                          await musicController.seek(Duration(milliseconds: value.toInt()));
+                        },
+                        label: MyTimeUtils.convertDurationToTimeString(
+                            musicController.currentPlayTime.value),
+                        min: 0,
+                        max: musicController.currentMaxTime.value.inMilliseconds
+                            .toDouble(),
+                        activeColor: Colors.grey[300],
+                        inactiveColor: Colors.grey[700]),
+                  ),
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      "00:00",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w300,
-                        fontSize: 12,
-                        color: Colors.white,
+                    Obx(
+                      () => Text(
+                        MyTimeUtils.convertDurationToTimeString(
+                            musicController.currentPlayTime.value),
+                        style: TextStyle(
+                            fontWeight: FontWeight.w300,
+                            fontSize: 12,
+                            color: Colors.white,
+                            fontFeatures: [FontFeature.tabularFigures()]),
                       ),
                     ),
-                    Text(
-                      "00:20",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w300,
-                        fontSize: 12,
-                        color: Colors.grey[400],
+                    Obx(
+                      () => Text(
+                        MyTimeUtils.convertDurationToTimeString(
+                            musicController.currentMaxTime.value),
+                        style: TextStyle(
+                            fontWeight: FontWeight.w300,
+                            fontSize: 12,
+                            color: Colors.grey[400],
+                            fontFeatures: [FontFeature.tabularFigures()]),
                       ),
-                    )
+                    ),
                   ],
                 ),
                 SizedBox(height: 25),
@@ -178,11 +222,24 @@ class _MusicDetailSheetState extends State<MusicDetailSheet> {
                               color: Colors.grey[200],
                               shape: BoxShape.circle,
                             ),
-                            child: Center(
-                              child: Icon(
-                                Icons.pause,
-                                color: MyTheme.darkColorBlur,
-                                size: 40,
+                            child: Obx(
+                              () => GestureDetector(
+                                onTap: () async {
+                                  if (musicController.isPlaying.value) {
+                                    await musicController.pauseSong();
+                                  } else {
+                                    await musicController.resumeSong();
+                                  }
+                                },
+                                child: Center(
+                                  child: Icon(
+                                    musicController.isPlaying.value
+                                        ? Icons.pause
+                                        : Icons.play_arrow,
+                                    color: MyTheme.darkColorBlur,
+                                    size: 40,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -220,9 +277,6 @@ class _MusicDetailSheetState extends State<MusicDetailSheet> {
     );
   } //end build t
 
-  void _scrollControllerListener() {
-    print(this.scrollController.position.pixels);
-  }
 } //end state class
 
 class _CustomTrackShape extends RoundedRectSliderTrackShape {

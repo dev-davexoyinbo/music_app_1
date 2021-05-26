@@ -1,19 +1,43 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:music_app_trial_1/utils/my_time_utils.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:collection/collection.dart';
 
 class MusicController extends GetxController {
   final songs = <SongModel>[].obs;
   int _currentSongId = -1.obs;
-  final _audioPlayer = AudioPlayer();
+  late AudioPlayer _audioPlayer;
   final isPlaying = false.obs;
+  final currentPlayTime = Duration().obs;
+  final currentMaxTime = Duration().obs;
 
-  SongModel? get currentSong {
-    return songs.firstWhereOrNull((SongModel element) => element.id == _currentSongId);
+  MusicController() {
+    _audioPlayer = AudioPlayer();
   }
 
+  @override
+  void onInit() {
+    super.onInit();
+    _audioPlayer.onAudioPositionChanged.listen((Duration duration) {
+      currentPlayTime.value = duration;
+    });
+    _audioPlayer.onDurationChanged.listen((Duration duration) {
+      currentMaxTime.value = duration;
+    });
+  }
+
+
+  @override
+  void onClose() {
+    _audioPlayer.release();
+  }
+
+  SongModel? get currentSong {
+    return songs
+        .firstWhereOrNull((SongModel element) => element.id == _currentSongId);
+  }
 
   Future<bool> requestPermission() async {
     bool val = await OnAudioQuery().permissionsRequest();
@@ -32,8 +56,8 @@ class MusicController extends GetxController {
     return Future.value(true);
   } //end method getArtists2
 
-  Future<ImageProvider> getAudioImage(SongModel songModel) async {
-    if (songModel.artwork == null) {
+  Future<ImageProvider> getAudioImage(SongModel? songModel) async {
+    if (songModel != null && songModel.artwork == null) {
       var uint8list =
           await OnAudioQuery().queryArtworks(songModel.id, ArtworkType.AUDIO);
       if (uint8list == null) {
@@ -61,9 +85,8 @@ class MusicController extends GetxController {
     this._currentSongId++;
     print(this._currentSongId);
 
-
     int success = await _audioPlayer.play(song.data, isLocal: true);
-    if(success == 1){
+    if (success == 1) {
       this.isPlaying.value = true;
       this._currentSongId = song.id;
 
@@ -73,7 +96,7 @@ class MusicController extends GetxController {
     return Future.value(false);
   } //end class playSong
 
-  Future<bool> pauseSong() async{
+  Future<bool> pauseSong() async {
     await _audioPlayer.pause();
 
     this.isPlaying.value = false;
@@ -81,7 +104,7 @@ class MusicController extends GetxController {
     return Future.value(true);
   }
 
-  Future<bool> resumeSong() async{
+  Future<bool> resumeSong() async {
     await _audioPlayer.resume();
 
     this.isPlaying.value = true;
@@ -89,7 +112,7 @@ class MusicController extends GetxController {
     return Future.value(true);
   }
 
-  Future<bool> stopSong() async{
+  Future<bool> stopSong() async {
     await _audioPlayer.stop();
 
     this.isPlaying.value = false;
@@ -97,7 +120,7 @@ class MusicController extends GetxController {
     return Future.value(true);
   }
 
-  Future<bool> clearSong() async{
+  Future<bool> clearSong() async {
     await stopSong();
     this._currentSongId = -1;
 
@@ -105,4 +128,13 @@ class MusicController extends GetxController {
 
     return Future.value(true);
   }
+
+  Future<bool> seek(Duration duration) async {
+    _audioPlayer.seek(Duration(
+        milliseconds:
+            duration.inMilliseconds > currentMaxTime.value.inMilliseconds
+                ? currentMaxTime.value.inMilliseconds
+                : duration.inMilliseconds));
+    return Future.value(true);
+  } //end seek
 } //end class MusicController
