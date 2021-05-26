@@ -14,8 +14,9 @@ class MusicController extends GetxController {
   final currentPlayTime = Duration().obs;
   final currentMaxTime = Duration().obs;
   final _queue = <SongModel>[].obs;
-  final _queueType = QueueType.SONG.obs;
+  final _queueType = QueueType.NULL.obs;
   final repeatType = RepeatType.NO_REPEAT.obs;
+  final shuffle = false.obs;
 
   MusicController() {
     _audioPlayer = AudioPlayer();
@@ -88,10 +89,10 @@ class MusicController extends GetxController {
     return playSong(song);
   }
 
-  Future<bool> playSong(SongModel? song, {QueueType? queueType}) async {
+  Future<bool> playSong(SongModel? song, {QueueType queueType = QueueType.SONG}) async {
     if (song == null) return Future.value(false);
 
-    changeQueueType(queueType ?? QueueType.SONG);
+    changeQueueType(queueType );
 
     if (_queue.firstWhereOrNull((SongModel element) => element.id == song.id) ==
         null) return Future.value(false);
@@ -134,10 +135,10 @@ class MusicController extends GetxController {
     if (currentSong == null) {
       if (_queue.length != 0) nextSong = _queue[0];
     } else {
-      int index = _queue.indexOf(currentSong);
+      int index = _queue.indexWhere((song) => song.id == _currentSongId);
       int nextIndex;
       nextIndex = (index + 1);
-      if(onCompletion && repeatType.value == RepeatType.NO_REPEAT){
+      if(onCompletion && repeatType.value == RepeatType.NO_REPEAT && nextIndex >= _queue.length){
         isPlaying.value = false;
         return Future.value(true);
       }
@@ -148,6 +149,8 @@ class MusicController extends GetxController {
       nextSong = _queue[nextIndex];
     }
 
+    print("next ${nextSong!.title}");
+
     return playSong(nextSong);
   }
 
@@ -157,7 +160,7 @@ class MusicController extends GetxController {
     if (currentSong == null) {
       if (_queue.length != 0) nextSong = _queue[0];
     } else {
-      int index = _queue.indexOf(currentSong);
+      int index = _queue.indexWhere((song) => song.id == _currentSongId);
       int nextIndex = (index - 1);
       if (nextIndex < 0) {
         nextIndex = _queue.length + nextIndex;
@@ -195,8 +198,8 @@ class MusicController extends GetxController {
   } //end seek
 
   void changeQueueType(QueueType queueType) {
-    // if(_queueType.value == queueType)
-    //   return;
+    if(_queueType.value == queueType)
+      return;
 
     _queueType.value = queueType;
 
@@ -215,5 +218,14 @@ class MusicController extends GetxController {
 
     repeatType.value = repeatTypes[newIndex];
     print(repeatType.value);
+  }
+
+  void toggleShuffle() {
+    shuffle.value = !shuffle.value;
+    if(shuffle.value){
+      _queue.shuffle();
+    }else {
+      _queue.sort((song1, song2) => song1.title.toLowerCase().compareTo(song2.title.toLowerCase()));
+    }
   }
 } //end class MusicController

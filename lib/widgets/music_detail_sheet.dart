@@ -137,13 +137,16 @@ class MusicDetailSheet extends StatelessWidget {
                     trackShape: _CustomTrackShape(),
                   ),
                   child: Obx(() {
-                    double max = musicController
-                        .currentMaxTime.value.inMilliseconds
-                        .toDouble();
-                    double value =
-                        (musicController.currentPlayTime.value.inMilliseconds %
-                                max)
-                            .toDouble();
+                    int intMax =
+                        musicController.currentMaxTime.value.inMilliseconds;
+
+                    int intVal =
+                        musicController.currentPlayTime.value.inMilliseconds;
+
+                    if (intMax > 0) intVal %= intMax;
+
+                    double value = intVal.toDouble();
+                    double max = intMax.toDouble();
 
                     return Slider(
                         value: value,
@@ -163,11 +166,15 @@ class MusicDetailSheet extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Obx(() {
-                      int max = musicController.currentMaxTime.value.inMilliseconds;
-                      int value = musicController
-                          .currentPlayTime.value.inMilliseconds % max;
+                      int max =
+                          musicController.currentMaxTime.value.inMilliseconds;
+                      int value =
+                          musicController.currentPlayTime.value.inMilliseconds;
+
+                      if (max > 0) value %= max;
                       return Text(
-                        MyTimeUtils.convertDurationToTimeString(Duration(milliseconds: value)),
+                        MyTimeUtils.convertDurationToTimeString(
+                            Duration(milliseconds: value)),
                         style: TextStyle(
                             fontWeight: FontWeight.w300,
                             fontSize: 12,
@@ -299,12 +306,18 @@ class MusicDetailSheet extends StatelessWidget {
                         ],
                       ),
                     ),
-                    IconButton(onPressed: (){
-
-                    },icon: Icon(
-                      Icons.shuffle,
-                      color: Colors.grey[500],
-                    )),
+                    Obx(
+                      () => IconButton(
+                        onPressed: () {
+                          musicController.toggleShuffle();
+                        },
+                        icon: Icon(
+                          Icons.shuffle,
+                          color: Colors
+                              .grey[musicController.shuffle.value ? 200 : 500],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ],
