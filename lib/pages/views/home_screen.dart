@@ -56,12 +56,13 @@ class _HomeScreenState extends State<HomeScreen>
                     FutureBuilder(
                         future: musicController.getSongs(),
                         builder: (context, snapshot) {
-                          if(snapshot.connectionState == ConnectionState.done){
-                            if(snapshot.hasError){
+                          if (snapshot.connectionState ==
+                              ConnectionState.done) {
+                            if (snapshot.hasError) {
                               return _ErrorWidget();
                             }
                             return TracksTab();
-                          }else {
+                          } else {
                             return Center(
                               child: CircularProgressIndicator(
                                 color: MyTheme.accentColor,
@@ -83,7 +84,13 @@ class _HomeScreenState extends State<HomeScreen>
                       : MediaQuery.of(context).size.height,
                   width: MediaQuery.of(context).size.width,
                   height: MediaQuery.of(context).size.height - 65,
-                  child: MusicDetailSheet(),
+                  child: GestureDetector(
+                    onVerticalDragEnd: (DragEndDetails details) {
+                      if((details.primaryVelocity ?? 0 ) > 8)
+                        mainController.showMediaSheet(false);
+                    },
+                    child: MusicDetailSheet(),
+                  ),
                 );
               }),
             ],
@@ -128,8 +135,7 @@ class _ErrorWidget extends StatelessWidget {
             child: Text(
               "An error occured while fetching data",
               textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: 16, color: Colors.grey[400]),
+              style: TextStyle(fontSize: 16, color: Colors.grey[400]),
             ),
           )
         ],
@@ -137,4 +143,3 @@ class _ErrorWidget extends StatelessWidget {
     );
   }
 }
-

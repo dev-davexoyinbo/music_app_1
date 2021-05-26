@@ -8,16 +8,7 @@ import 'package:music_app_trial_1/controllers/music_controller.dart';
 import 'package:music_app_trial_1/my_theme.dart';
 import 'package:music_app_trial_1/utils/my_time_utils.dart';
 
-class MusicDetailSheet extends StatefulWidget {
-  const MusicDetailSheet({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  _MusicDetailSheetState createState() => _MusicDetailSheetState();
-}
-
-class _MusicDetailSheetState extends State<MusicDetailSheet> {
+class MusicDetailSheet extends StatelessWidget {
   final MainController mainController = Get.find<MainController>();
   final MusicController musicController = Get.find<MusicController>();
 
