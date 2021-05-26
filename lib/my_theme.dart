@@ -7,5 +7,6 @@ class MyTheme {
   static Color darkColorBlur = Color(0xFF383833);
   // static Color darkColorLight2 = Color(0xFF6f6f6f);
   static Color darkColorLight2 = Colors.white60;
+  static Color errorColor = Color(0xFFED4337);
 
 }

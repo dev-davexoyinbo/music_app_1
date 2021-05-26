@@ -2,22 +2,25 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:get/get.dart';
+import 'package:music_app_trial_1/controllers/music_controller.dart';
 import 'package:music_app_trial_1/my_theme.dart';
 
 class TrackStrip extends StatefulWidget {
-  final ImageProvider image;
   final String name;
   final String artist;
   final String timeString;
   late final bool isPlaying;
+  final Future<ImageProvider> imageFuture;
 
-  TrackStrip(
-      {Key? key,
-      required this.image,
-      required this.name,
-      required this.artist,
-      required this.timeString, bool? isPlaying})
-      : super(key: key){
+  TrackStrip({
+    Key? key,
+    required this.name,
+    required this.artist,
+    required this.timeString,
+    bool? isPlaying,
+    required this.imageFuture,
+  }) : super(key: key) {
     this.isPlaying = isPlaying ?? false;
   }
 
@@ -26,10 +29,14 @@ class TrackStrip extends StatefulWidget {
 }
 
 class _TrackStripState extends State<TrackStrip> {
+  final MusicController musicController = Get.find<MusicController>();
   @override
   Widget build(BuildContext context) {
-    Color lightColor = widget.isPlaying ? MyTheme.accentColor : Colors.grey[200] as Color;
-    Color fadedColor = widget.isPlaying ? MyTheme.accentColor.withAlpha(200) : Colors.grey[400] as Color;
+    Color lightColor =
+        widget.isPlaying ? MyTheme.accentColor : Colors.grey[200] as Color;
+    Color fadedColor = widget.isPlaying
+        ? MyTheme.accentColor.withAlpha(200)
+        : Colors.grey[400] as Color;
 
     return Container(
       child: Row(
@@ -37,9 +44,19 @@ class _TrackStripState extends State<TrackStrip> {
           Expanded(
             child: Row(
               children: [
-                CircleAvatar(
-                  backgroundImage: widget.image,
-                  radius: 28,
+                FutureBuilder<ImageProvider>(
+                  future: widget.imageFuture,
+                  builder: (context, snapshot) {
+                    ImageProvider image = musicController.placeholderImage();
+                    if (snapshot.connectionState == ConnectionState.done && !snapshot.hasError) {
+                      image = snapshot.data as ImageProvider;
+                    }
+
+                    return CircleAvatar(
+                      backgroundImage: image,
+                      radius: 28,
+                    );
+                  },
                 ),
                 SizedBox(
                   width: 10,
@@ -83,13 +100,10 @@ class _TrackStripState extends State<TrackStrip> {
               Text(
                 widget.timeString,
                 style: TextStyle(
-                  color: fadedColor,
-                  fontWeight: FontWeight.w300,
-                  fontSize: 12,
-                  fontFeatures: [
-                    FontFeature.tabularFigures()
-                  ]
-                ),
+                    color: fadedColor,
+                    fontWeight: FontWeight.w300,
+                    fontSize: 12,
+                    fontFeatures: [FontFeature.tabularFigures()]),
               ),
             ],
           )
