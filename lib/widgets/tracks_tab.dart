@@ -34,16 +34,18 @@ class _TracksTabState extends State<TracksTab> {
                         print("Something is about to happen");
                         musicController.playSong(song);
                       },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: TrackStrip(
-                          isPlaying: index == 2,
-                          imageFuture: musicController.getAudioImage(song),
-                          name: title,
-                          artist: artist,
-                          timeString: index % 2 == 0 ? "02:12" : "02:48",
-                        ),
-                      ),
+                      child: GetBuilder<MusicController>(
+                        builder: (_) =>Container(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: TrackStrip(
+                            isPlaying: musicController.currentSong!.id == song.id,
+                            imageFuture: musicController.getAudioImage(song),
+                            name: title,
+                            artist: artist,
+                            timeString: index % 2 == 0 ? "02:12" : "02:48",
+                          ),
+                        )
+                      ) ,
                     );
                   });
             }),
