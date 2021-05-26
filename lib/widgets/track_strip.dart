@@ -6,37 +6,31 @@ import 'package:get/get.dart';
 import 'package:music_app_trial_1/controllers/music_controller.dart';
 import 'package:music_app_trial_1/my_theme.dart';
 
-class TrackStrip extends StatefulWidget {
+class TrackStrip extends StatelessWidget {
   final String name;
   final String artist;
   final String timeString;
-  late final bool isPlaying;
   final Future<ImageProvider> imageFuture;
+  final int id;
 
   TrackStrip({
     Key? key,
     required this.name,
     required this.artist,
     required this.timeString,
-    bool? isPlaying,
+    required this.id,
     required this.imageFuture,
-  }) : super(key: key) {
-    this.isPlaying = isPlaying ?? false;
-  }
+  }) : super(key: key);
 
-  @override
-  _TrackStripState createState() => _TrackStripState();
-}
-
-class _TrackStripState extends State<TrackStrip> {
   final MusicController musicController = Get.find<MusicController>();
+
   @override
   Widget build(BuildContext context) {
-    Color lightColor =
-        widget.isPlaying ? MyTheme.accentColor : Colors.grey[200] as Color;
-    Color fadedColor = widget.isPlaying
-        ? MyTheme.accentColor.withAlpha(200)
-        : Colors.grey[400] as Color;
+    // Color lightColor =
+    //     isPlaying ? MyTheme.accentColor : Colors.grey[200] as Color;
+    // Color fadedColor = isPlaying
+    //     ? MyTheme.accentColor.withAlpha(200)
+    //     : Colors.grey[400] as Color;
 
     return Container(
       child: Row(
@@ -45,10 +39,11 @@ class _TrackStripState extends State<TrackStrip> {
             child: Row(
               children: [
                 FutureBuilder<ImageProvider>(
-                  future: widget.imageFuture,
+                  future: imageFuture,
                   builder: (context, snapshot) {
                     ImageProvider image = musicController.placeholderImage();
-                    if (snapshot.connectionState == ConnectionState.done && !snapshot.hasError) {
+                    if (snapshot.connectionState == ConnectionState.done &&
+                        !snapshot.hasError) {
                       image = snapshot.data as ImageProvider;
                     }
 
@@ -65,27 +60,35 @@ class _TrackStripState extends State<TrackStrip> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        widget.name,
-                        overflow: TextOverflow.ellipsis,
-                        textWidthBasis: TextWidthBasis.parent,
-                        softWrap: false,
-                        style: TextStyle(
-                          color: lightColor,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 16,
+                      GetBuilder<MusicController>(
+                        builder: (_) => Text(
+                          name,
+                          overflow: TextOverflow.ellipsis,
+                          textWidthBasis: TextWidthBasis.parent,
+                          softWrap: false,
+                          style: TextStyle(
+                            color: musicController.currentSong!.id == id
+                                ? MyTheme.accentColor
+                                : Colors.grey[200] as Color,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 16,
+                          ),
                         ),
                       ),
                       SizedBox(
                         height: 2,
                       ),
-                      Text(
-                        widget.artist,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: fadedColor,
-                          fontWeight: FontWeight.w300,
-                          fontSize: 14,
+                      GetBuilder<MusicController>(
+                        builder: (_) => Text(
+                          artist,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: musicController.currentSong!.id == id
+                                ? MyTheme.accentColor.withAlpha(200)
+                                : Colors.grey[400] as Color,
+                            fontWeight: FontWeight.w300,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ],
@@ -97,13 +100,17 @@ class _TrackStripState extends State<TrackStrip> {
           SizedBox(width: 10),
           Row(
             children: [
-              Text(
-                widget.timeString,
-                style: TextStyle(
-                    color: fadedColor,
-                    fontWeight: FontWeight.w300,
-                    fontSize: 12,
-                    fontFeatures: [FontFeature.tabularFigures()]),
+              GetBuilder<MusicController>(
+                builder: (_) => Text(
+                  timeString,
+                  style: TextStyle(
+                      color: musicController.currentSong!.id == id
+                          ? MyTheme.accentColor.withAlpha(200)
+                          : Colors.grey[400] as Color,
+                      fontWeight: FontWeight.w300,
+                      fontSize: 12,
+                      fontFeatures: [FontFeature.tabularFigures()]),
+                ),
               ),
             ],
           )
