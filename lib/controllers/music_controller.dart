@@ -1,9 +1,12 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 class MusicController extends GetxController{
   final songs = <SongModel>[].obs;
+
+  final _audioPlayer = AudioPlayer();
 
   Future<bool> requestPermission() async {
     bool val = await OnAudioQuery().permissionsRequest();
@@ -15,7 +18,6 @@ class MusicController extends GetxController{
     print("Getting all songs from device storage");
     await requestPermission();
     List<SongModel> songs = await OnAudioQuery().querySongs();
-    print("Count: ${songs.length}");
 
     this.songs.removeRange(0, this.songs.length);
     songs.forEach((SongModel songModel) {
@@ -43,4 +45,16 @@ class MusicController extends GetxController{
   ImageProvider placeholderImage() {
     return AssetImage("assets/images/placeholder_image.jpg");
   }
+
+  Future<bool> playSongById(int id) async {
+    SongModel song = songs.firstWhere((SongModel songModel) => songModel.id == id);
+
+    return playSong(song);
+  }
+
+  Future<bool> playSong(SongModel song) async {
+    print("Playing: ${song.data}");
+    await _audioPlayer.play(song.data, isLocal: true);
+    return Future.value(true);
+  }//end class playSong
 }//end class MusicController

@@ -29,14 +29,20 @@ class _TracksTabState extends State<TracksTab> {
                     String title = song.title;
                     String artist = song.artist;
 
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TrackStrip(
-                        isPlaying: index == 2,
-                        imageFuture: musicController.getAudioImage(song),
-                        name: title,
-                        artist: artist,
-                        timeString: index % 2 == 0 ? "02:12" : "02:48",
+                    return GestureDetector(
+                      onTap: (){
+                        print("Something is about to happen");
+                        musicController.playSong(song);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TrackStrip(
+                          isPlaying: index == 2,
+                          imageFuture: musicController.getAudioImage(song),
+                          name: title,
+                          artist: artist,
+                          timeString: index % 2 == 0 ? "02:12" : "02:48",
+                        ),
                       ),
                     );
                   });
