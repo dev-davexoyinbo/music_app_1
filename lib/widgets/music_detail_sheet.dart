@@ -52,8 +52,8 @@ class MusicDetailSheet extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: GetBuilder<MusicController>(
               builder: (_) => FutureBuilder<ImageProvider>(
-                future: musicController
-                    .getAudioImage(musicController.currentSong),
+                future:
+                    musicController.getAudioImage(musicController.currentSong),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
                     return Container(
@@ -136,11 +136,17 @@ class MusicDetailSheet extends StatelessWidget {
                     trackHeight: 2,
                     trackShape: _CustomTrackShape(),
                   ),
-                  child: Obx(
-                    () => Slider(
-                        value: musicController
-                            .currentPlayTime.value.inMilliseconds
-                            .toDouble(),
+                  child: Obx(() {
+                    double max = musicController
+                        .currentMaxTime.value.inMilliseconds
+                        .toDouble();
+                    double value =
+                        (musicController.currentPlayTime.value.inMilliseconds %
+                                max)
+                            .toDouble();
+
+                    return Slider(
+                        value: value,
                         onChanged: (value) async {
                           await musicController
                               .seek(Duration(milliseconds: value.toInt()));
@@ -148,27 +154,27 @@ class MusicDetailSheet extends StatelessWidget {
                         label: MyTimeUtils.convertDurationToTimeString(
                             musicController.currentPlayTime.value),
                         min: 0,
-                        max: musicController
-                            .currentMaxTime.value.inMilliseconds
-                            .toDouble(),
+                        max: max,
                         activeColor: Colors.grey[300],
-                        inactiveColor: Colors.grey[700]),
-                  ),
+                        inactiveColor: Colors.grey[700]);
+                  }),
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Obx(
-                      () => Text(
-                        MyTimeUtils.convertDurationToTimeString(
-                            musicController.currentPlayTime.value),
+                    Obx(() {
+                      int max = musicController.currentMaxTime.value.inMilliseconds;
+                      int value = musicController
+                          .currentPlayTime.value.inMilliseconds % max;
+                      return Text(
+                        MyTimeUtils.convertDurationToTimeString(Duration(milliseconds: value)),
                         style: TextStyle(
                             fontWeight: FontWeight.w300,
                             fontSize: 12,
                             color: Colors.white,
                             fontFeatures: [FontFeature.tabularFigures()]),
-                      ),
-                    ),
+                      );
+                    }),
                     Obx(
                       () => Text(
                         MyTimeUtils.convertDurationToTimeString(
@@ -204,10 +210,14 @@ class MusicDetailSheet extends StatelessWidget {
                           break;
                       }
 
-                      return Icon(
-                        icon,
-                        color: color,
-                      );
+                      return IconButton(
+                          onPressed: () {
+                            musicController.toggleRepeat();
+                          },
+                          icon: Icon(
+                            icon,
+                            color: color,
+                          ));
                     }),
                     Center(
                       child: Row(
@@ -289,10 +299,12 @@ class MusicDetailSheet extends StatelessWidget {
                         ],
                       ),
                     ),
-                    Icon(
+                    IconButton(onPressed: (){
+
+                    },icon: Icon(
                       Icons.shuffle,
                       color: Colors.grey[500],
-                    ),
+                    )),
                   ],
                 ),
               ],
