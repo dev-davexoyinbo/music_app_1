@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:music_app_trial_1/controllers/music_controller.dart';
 import 'package:music_app_trial_1/my_theme.dart';
+import 'package:music_app_trial_1/utils/my_time_utils.dart';
 import 'package:music_app_trial_1/widgets/track_strip.dart';
 
 class TracksTab extends StatefulWidget {
@@ -41,7 +42,7 @@ class _TracksTabState extends State<TracksTab> {
                           imageFuture: musicController.getAudioImage(song),
                           name: title,
                           artist: artist,
-                          timeString: index % 2 == 0 ? "02:12" : "02:48",
+                          timeString: MyTimeUtils.convertMillisecondsStringToTimeString(song.duration),
                         ),
                       )
                     );
