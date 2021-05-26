@@ -26,12 +26,6 @@ class TrackStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Color lightColor =
-    //     isPlaying ? MyTheme.accentColor : Colors.grey[200] as Color;
-    // Color fadedColor = isPlaying
-    //     ? MyTheme.accentColor.withAlpha(200)
-    //     : Colors.grey[400] as Color;
-
     return Container(
       child: Row(
         children: [
@@ -67,7 +61,7 @@ class TrackStrip extends StatelessWidget {
                           textWidthBasis: TextWidthBasis.parent,
                           softWrap: false,
                           style: TextStyle(
-                            color: musicController.currentSong!.id == id
+                            color: musicController.currentSong != null && musicController.currentSong!.id == id
                                 ? MyTheme.accentColor
                                 : Colors.grey[200] as Color,
                             fontWeight: FontWeight.w500,
@@ -83,7 +77,7 @@ class TrackStrip extends StatelessWidget {
                           artist,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            color: musicController.currentSong!.id == id
+                            color: musicController.currentSong != null && musicController.currentSong!.id == id
                                 ? MyTheme.accentColor.withAlpha(200)
                                 : Colors.grey[400] as Color,
                             fontWeight: FontWeight.w300,
@@ -104,7 +98,7 @@ class TrackStrip extends StatelessWidget {
                 builder: (_) => Text(
                   timeString,
                   style: TextStyle(
-                      color: musicController.currentSong!.id == id
+                      color: musicController.currentSong != null && musicController.currentSong!.id == id
                           ? MyTheme.accentColor.withAlpha(200)
                           : Colors.grey[400] as Color,
                       fontWeight: FontWeight.w300,
