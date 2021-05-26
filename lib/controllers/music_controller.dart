@@ -1,6 +1,8 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:music_app_trial_1/models/queue_type.dart';
+import 'package:music_app_trial_1/models/repeat_type.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:collection/collection.dart';
 
@@ -13,6 +15,7 @@ class MusicController extends GetxController {
   final currentMaxTime = Duration().obs;
   final _queue = <SongModel>[].obs;
   final _queueType = QueueType.SONG.obs;
+  final repeatType = RepeatType.NO_REPEAT.obs;
 
   MusicController() {
     _audioPlayer = AudioPlayer();
@@ -28,7 +31,11 @@ class MusicController extends GetxController {
       currentMaxTime.value = duration;
     });
     _audioPlayer.onPlayerCompletion.listen((event) {
-      print("completed");
+      if(repeatType.value == RepeatType.REPEAT_ONE){
+        playSong(currentSong);
+        return;
+      }
+
       skipToNext();
     });
   }
@@ -199,6 +206,3 @@ class MusicController extends GetxController {
   }
 } //end class MusicController
 
-enum QueueType {
-  SONG, ALBUM, ARTIST, PLAYLIST
-}
