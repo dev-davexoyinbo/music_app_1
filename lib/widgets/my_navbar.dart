@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:music_app_trial_1/controllers/music_controller.dart';
 import 'package:music_app_trial_1/my_theme.dart';
 import 'package:music_app_trial_1/widgets/my_bottom_navigation_bar.dart';
 import 'package:music_app_trial_1/widgets/playing_widget_sm.dart';
 
-class MyNavBar extends StatefulWidget {
-  const MyNavBar({Key? key}) : super(key: key);
+class MyNavBar extends StatelessWidget {
+  MyNavBar({Key? key}) : super(key: key);
 
-  @override
-  _MyNavBarState createState() => _MyNavBarState();
-}
+  final MusicController musicController = Get.find<MusicController>();
 
-class _MyNavBarState extends State<MyNavBar> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -21,10 +20,13 @@ class _MyNavBarState extends State<MyNavBar> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: PlayingWidgetSm(),
-          ),
+          GetBuilder<MusicController>(builder: (_) => Visibility(
+                visible: musicController.currentSong != null,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: PlayingWidgetSm(),
+                ),
+              )),
           MyBottomNavigationBar(),
         ],
       ),

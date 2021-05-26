@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:music_app_trial_1/controllers/main_controller.dart';
+import 'package:music_app_trial_1/controllers/music_controller.dart';
 
 class PlayingWidgetSm extends StatelessWidget {
-
   PlayingWidgetSm({Key? key}) : super(key: key);
 
   final MainController mainController = Get.find<MainController>();
+  final MusicController musicController = Get.find<MusicController>();
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +18,7 @@ class PlayingWidgetSm extends StatelessWidget {
         children: [
           Expanded(
             child: GestureDetector(
-              onTap: (){
+              onTap: () {
                 mainController.displayMediaSheetAction(true);
               },
               child: Container(
@@ -25,32 +26,50 @@ class PlayingWidgetSm extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.max,
                   children: [
-                    CircleAvatar(
-                      backgroundImage: AssetImage("assets/images/music_cover.jpg"),
+                    FutureBuilder<ImageProvider>(
+                      future: musicController
+                          .getAudioImage(musicController.currentSong!),
+                      builder: (context, snapshot) {
+                        ImageProvider image =
+                            musicController.placeholderImage();
+                        if (snapshot.connectionState == ConnectionState.done &&
+                            !snapshot.hasError) {
+                          image = snapshot.data as ImageProvider;
+                        }
+
+                        return CircleAvatar(
+                          backgroundImage: image,
+                          radius: 22,
+                        );
+                      },
                     ),
                     SizedBox(
                       width: 10,
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Pain",
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey[300],
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        SizedBox(height: 3),
-                        Text(
-                          "Ryan Jones",
-                          style: TextStyle(
-                            color: Colors.grey[400],
-                            fontWeight: FontWeight.w300,
-                          ),
-                        ),
-                      ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Obx(() => Text(
+                                musicController.currentSong!.title,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[300],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              )),
+                          SizedBox(height: 3),
+                          Obx(() => Text(
+                                musicController.currentSong!.artist,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: Colors.grey[400],
+                                  fontWeight: FontWeight.w300,
+                                ),
+                              )),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -60,11 +79,34 @@ class PlayingWidgetSm extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.play_arrow, size: 32, color: Colors.grey[200]),
+              Obx(() => GestureDetector(
+                    onTap: () async {
+                      if (musicController.isPlaying.value) {
+                        await musicController.pauseSong();
+                      } else {
+                        await musicController.resumeSong();
+                      }
+                    },
+                    child: Icon(
+                        musicController.isPlaying.value
+                            ? Icons.pause
+                            : Icons.play_arrow,
+                        size: 32,
+                        color: Colors.grey[200]),
+                  )),
               SizedBox(
                 width: 10,
               ),
-              Icon(Icons.clear_outlined, size: 32, color: Colors.grey[200])
+              GestureDetector(
+                onTap: () async{
+                  await musicController.clearSong();
+                },
+                child: Icon(
+                  Icons.clear_outlined,
+                  size: 32,
+                  color: Colors.grey[200],
+                ),
+              ),
             ],
           ),
         ],
