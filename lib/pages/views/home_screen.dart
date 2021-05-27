@@ -69,7 +69,6 @@ class _HomeScreenState extends State<HomeScreen>
                           );
                         }
                       }),
-                  // TracksTab(),
                   Center(child: Text("Tab two")),
                 ],
               ),

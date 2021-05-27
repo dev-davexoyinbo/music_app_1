@@ -9,7 +9,7 @@ import 'package:collection/collection.dart';
 class MusicController extends GetxController {
   final songs = <SongModel>[].obs;
   int _currentSongId = -1.obs;
-  late AudioPlayer _audioPlayer;
+  final AudioPlayer _audioPlayer = AudioPlayer();
   final isPlaying = false.obs;
   final currentPlayTime = Duration().obs;
   final currentMaxTime = Duration().obs;
@@ -18,9 +18,7 @@ class MusicController extends GetxController {
   final repeatType = RepeatType.NO_REPEAT.obs;
   final shuffle = false.obs;
 
-  MusicController() {
-    _audioPlayer = AudioPlayer();
-  }
+  // final songsFetched
 
   @override
   void onInit() {
@@ -89,10 +87,11 @@ class MusicController extends GetxController {
     return playSong(song);
   }
 
-  Future<bool> playSong(SongModel? song, {QueueType queueType = QueueType.SONG}) async {
+  Future<bool> playSong(SongModel? song,
+      {QueueType queueType = QueueType.SONG}) async {
     if (song == null) return Future.value(false);
 
-    changeQueueType(queueType );
+    changeQueueType(queueType);
 
     if (_queue.firstWhereOrNull((SongModel element) => element.id == song.id) ==
         null) return Future.value(false);
@@ -138,18 +137,17 @@ class MusicController extends GetxController {
       int index = _queue.indexWhere((song) => song.id == _currentSongId);
       int nextIndex;
       nextIndex = (index + 1);
-      if(onCompletion && repeatType.value == RepeatType.NO_REPEAT && nextIndex >= _queue.length){
+      if (onCompletion &&
+          repeatType.value == RepeatType.NO_REPEAT &&
+          nextIndex >= _queue.length) {
         isPlaying.value = false;
         return Future.value(true);
       }
-
 
       nextIndex %= _queue.length;
 
       nextSong = _queue[nextIndex];
     }
-
-    print("next ${nextSong!.title}");
 
     return playSong(nextSong);
   }
@@ -198,8 +196,7 @@ class MusicController extends GetxController {
   } //end seek
 
   void changeQueueType(QueueType queueType) {
-    if(_queueType.value == queueType)
-      return;
+    if (_queueType.value == queueType) return;
 
     _queueType.value = queueType;
 
@@ -217,15 +214,15 @@ class MusicController extends GetxController {
         (repeatTypes.indexOf(repeatType.value) + 1) % repeatTypes.length;
 
     repeatType.value = repeatTypes[newIndex];
-    print(repeatType.value);
   }
 
   void toggleShuffle() {
     shuffle.value = !shuffle.value;
-    if(shuffle.value){
+    if (shuffle.value) {
       _queue.shuffle();
-    }else {
-      _queue.sort((song1, song2) => song1.title.toLowerCase().compareTo(song2.title.toLowerCase()));
+    } else {
+      _queue.sort((song1, song2) =>
+          song1.title.toLowerCase().compareTo(song2.title.toLowerCase()));
     }
   }
 } //end class MusicController
