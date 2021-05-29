@@ -21,7 +21,7 @@ class _MySliverAppBarState extends State<MySliverAppBar> {
   Widget build(BuildContext context) {
     return SliverAppBar(
       backgroundColor: MyTheme.darkColor,
-      elevation: 5,
+      elevation: 2,
       expandedHeight: 56 * 2 + 180,
       pinned: true,
       // floating: true,
@@ -38,32 +38,10 @@ class _MySliverAppBarState extends State<MySliverAppBar> {
         Container(
           margin: EdgeInsets.only(right: 10, left: 10),
           child: Icon(Icons.search),
+        ),Container(
+          margin: EdgeInsets.only(right: 10, left: 10),
+          child: Icon(Icons.manage_accounts_outlined),
         ),
-        Stack(alignment: AlignmentDirectional.center, children: [
-          Container(
-            margin: EdgeInsets.only(right: 10, left: 10),
-            child: Icon(Icons.shopping_cart_outlined),
-          ),
-          Positioned(
-            right: 5,
-            top: 5,
-            child: Container(
-              // padding: EdgeInsets.all(6),
-              height: 20,
-              width: 20,
-              child: Center(
-                child: Text(
-                  "2",
-                  style: TextStyle(color: Colors.black, fontSize: 12),
-                ),
-              ),
-              decoration: BoxDecoration(
-                color: MyTheme.accentColor,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-        ]),
       ],
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
