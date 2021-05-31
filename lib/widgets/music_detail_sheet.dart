@@ -50,8 +50,7 @@ class MusicDetailSheet extends StatelessWidget {
           SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: GetBuilder<MusicController>(
-              builder: (_) => FutureBuilder<ImageProvider>(
+            child: Obx(() => FutureBuilder<ImageProvider>(
                 future:
                     musicController.getAudioImage(musicController.currentSong.value),
                 builder: (context, snapshot) {
@@ -92,8 +91,7 @@ class MusicDetailSheet extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
-                      child: GetBuilder<MusicController>(
-                        builder: (_) => Text(
+                      child: Obx(() => Text(
                           musicController.currentSong.value != null
                               ? musicController.currentSong.value!.title
                               : "",
@@ -119,8 +117,7 @@ class MusicDetailSheet extends StatelessWidget {
                   ],
                 ),
                 SizedBox(height: 7),
-                GetBuilder<MusicController>(
-                  builder: (_) => Text(
+                Obx(() => Text(
                     musicController.currentSong.value != null
                         ? musicController.currentSong.value!.artist
                         : "",

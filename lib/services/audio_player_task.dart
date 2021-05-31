@@ -8,6 +8,7 @@ import 'package:collection/collection.dart';
 class AudioPlayerTask extends BackgroundAudioTask {
   static const String UPDATE_QUEUE = "UPDATE_QUEUE";
   static const String PLAY_SONG_BY_ID = "PLAY_SONG";
+
   final AudioPlayer _audioPlayer = AudioPlayer();
   List<MediaItem> _queue = <MediaItem>[];
 
@@ -60,6 +61,12 @@ class AudioPlayerTask extends BackgroundAudioTask {
     return AudioService.play();
   } //end method _playSong
 
+  String _getMediaPlayPath(MediaItem mediaItem) {
+    if (mediaItem.extras == null) return "";
+
+    return mediaItem.extras!["path"];
+  } //end method _getMediaPlayPath
+
   @override
   Future<void> onPlay() async {
     if (AudioServiceBackground.mediaItem == null) {
@@ -72,12 +79,56 @@ class AudioPlayerTask extends BackgroundAudioTask {
     MediaItem mediaItem = AudioServiceBackground.mediaItem as MediaItem;
 
     _audioPlayer.play(_getMediaPlayPath(mediaItem), isLocal: true);
-  } //end method onPlay
+  }// end method onPlay
 
-  String _getMediaPlayPath(MediaItem mediaItem) {
-    if (mediaItem.extras == null) return "";
+  @override
+  Future<void> onSkipToNext() async {
+    MediaItem? nextSong;
 
-    return mediaItem.extras!["path"];
-  } //end method _getMediaPlayPath
+    if (AudioServiceBackground.mediaItem == null) {
+      if (_queue.length != 0) nextSong = _queue[0];
+    } else {
+      var mediaItem = AudioServiceBackground.mediaItem as MediaItem;
+      if(_queue.length == 0) {
+        nextSong = null;
+      }else {
+        int index = _queue.indexWhere((song) => song.id == mediaItem.id);
+        int nextIndex;
+        nextIndex = (index + 1);
+        nextIndex %= _queue.length;
+        nextSong = _queue[nextIndex];
+      }
+    }
 
+    if(nextSong == null) return;
+
+    await AudioServiceBackground.setMediaItem(nextSong);
+    return AudioService.play();
+  }
+
+  @override
+  Future<void> onSkipToPrevious() async{
+    MediaItem? nextSong;
+
+    MediaItem? mediaItem = AudioServiceBackground.mediaItem;
+
+    if (mediaItem == null) {
+      if (_queue.length != 0) nextSong = _queue[0];
+    } else {
+      int index = _queue.indexWhere((song) => song.id == mediaItem.id);
+      if(index == -1) {
+        nextSong = _queue[0];
+      }else {
+        int nextIndex = (index - 1);
+        if (nextIndex < 0) {
+          nextIndex = _queue.length + nextIndex;
+        }
+        nextSong = _queue[nextIndex];
+      }
+    }
+
+    if(nextSong == null) return;
+    await AudioServiceBackground.setMediaItem(nextSong);
+    return AudioService.play();
+  } //end method onSkipToPrevious
 } //end class AudioPlayerTask

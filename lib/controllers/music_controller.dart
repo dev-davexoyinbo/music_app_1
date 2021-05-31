@@ -41,6 +41,9 @@ class MusicController extends GetxController {
     await _updateQueue(songs.value);
     AudioService.currentMediaItemStream.listen(_currentMediaItemLister);
 
+    // initialize current song
+    // _currentMediaItemLister(AudioServiceBackground.mediaItem);
+
     ///////////////////////////////
     ///////////////////////////////
     ///////////////////////////////
@@ -114,19 +117,6 @@ class MusicController extends GetxController {
     await _changeQueueType(queueType);
 
     await AudioService.customAction(AudioPlayerTask.PLAY_SONG_BY_ID, {"data" : song.id.toString()});
-    //
-    // if (_queue.firstWhereOrNull((SongModel element) => element.id == song.id) ==
-    //     null) return Future.value(false);
-    //
-    // int success = await _audioPlayer.play(song.data, isLocal: true);
-    // if (success == 1) {
-    //   this.isPlaying.value = true;
-    //   this._currentSongId = song.id;
-    //
-    //   update();
-    //   return Future.value(true);
-    // }
-    // return Future.value(false);
   } //end class playSong
 
   Future<void> _changeQueueType(QueueType queueType) async {
@@ -140,6 +130,14 @@ class MusicController extends GetxController {
         break;
     }
   }
+
+  Future<void> skipToNext({bool onCompletion = false}) async {
+    return AudioService.skipToNext();
+  } //end method skipToNext
+
+  Future<void> skipToPrevious() async {
+    return AudioService.skipToPrevious();
+  }//end method skipToPrevious
 
 
   // old code
@@ -190,51 +188,7 @@ class MusicController extends GetxController {
     return Future.value(true);
   }
 
-  Future<void> skipToNext({bool onCompletion = false}) async {
-    // If onCompletion and repeat is repeat one
-    if (onCompletion && repeatType.value == RepeatType.REPEAT_ONE) {
-      return playSong(currentSong.value);
-    }
 
-    SongModel? nextSong;
-
-    if (currentSong == null) {
-      if (_queue.length != 0) nextSong = _queue[0];
-    } else {
-      int index = _queue.indexWhere((song) => song.id == _currentSongId);
-      int nextIndex;
-      nextIndex = (index + 1);
-      if (onCompletion &&
-          repeatType.value == RepeatType.NO_REPEAT &&
-          nextIndex >= _queue.length) {
-        isPlaying.value = false;
-        return Future.value(true);
-      }
-
-      nextIndex %= _queue.length;
-
-      nextSong = _queue[nextIndex];
-    }
-
-    return playSong(nextSong);
-  } //end method skipToNext
-
-  Future<void> skipToPrevious() async {
-    SongModel? nextSong;
-
-    if (currentSong == null) {
-      if (_queue.length != 0) nextSong = _queue[0];
-    } else {
-      int index = _queue.indexWhere((song) => song.id == _currentSongId);
-      int nextIndex = (index - 1);
-      if (nextIndex < 0) {
-        nextIndex = _queue.length + nextIndex;
-      }
-      nextSong = _queue[nextIndex];
-    }
-
-    return playSong(nextSong);
-  }
 
   Future<void> stopSong() async {
     await _audioPlayer.stop();
