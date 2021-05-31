@@ -36,7 +36,22 @@ class MusicController extends GetxController {
   void onInit() async {
     super.onInit();
     _songsStream = _songsStreamController.stream.distinct();
-    await AudioService.start(backgroundTaskEntrypoint: _entrypoint);
+    await AudioService.connect();
+    if(!AudioService.running){
+      var x = await AudioService.start(
+        backgroundTaskEntrypoint: _entrypoint,
+        androidNotificationChannelName: 'Audio Service Demo',
+        // Enable this if you want the Android service to exit the foreground state on pause.
+        //androidStopForegroundOnPause: true,
+        androidNotificationColor: 0xFF2196f3,
+        androidNotificationIcon: 'mipmap/ic_launcher',
+        androidEnableQueue: true,
+      );
+      print(x);
+    }else {
+      print("Audio service is running");
+    }
+
     await _getSongs();
     await _updateQueue(songs.value);
     AudioService.currentMediaItemStream.listen(_currentMediaItemLister);
@@ -64,15 +79,15 @@ class MusicController extends GetxController {
   void onClose() {
     _audioPlayer.release();
     _songsStreamController.close();
+    AudioService.disconnect();
   }
 
   void _currentMediaItemLister(MediaItem? mediaItem) {
-    if(mediaItem == null)
-      return;
+    if (mediaItem == null) return;
 
-    currentSong.value = songs
-        .firstWhereOrNull((SongModel element) => element.id.toString() == mediaItem.id);
-  }//end method _currentMediaItemLister
+    currentSong.value = songs.firstWhereOrNull(
+        (SongModel element) => element.id.toString() == mediaItem.id);
+  } //end method _currentMediaItemLister
 
   Stream<List<SongModel>> getSongsStream() {
     return _songsStream;
@@ -89,12 +104,14 @@ class MusicController extends GetxController {
     _songsStreamController.sink.add(this.songs);
   } //end method _getSongs
 
-  Future<void> _updateQueue(List<SongModel> songModels)  async {
+  Future<void> _updateQueue(List<SongModel> songModels) async {
     var mySongModels = songModels
-        .map((songModel) => json.encode(_convertSongModelToMySongModel(songModel).toJson()))
+        .map((songModel) =>
+            json.encode(_convertSongModelToMySongModel(songModel).toJson()))
         .toList();
 
-    await AudioService.customAction(AudioPlayerTask.UPDATE_QUEUE, {"data" : mySongModels});
+    await AudioService.customAction(
+        AudioPlayerTask.UPDATE_QUEUE, {"data": mySongModels});
     _queue.clear();
     _queue.addAll(songModels);
   } //end method _updateQueue
@@ -111,12 +128,12 @@ class MusicController extends GetxController {
 
   Future<void> playSong(SongModel? song,
       {QueueType queueType = QueueType.SONG}) async {
-
     if (song == null) return;
 
     await _changeQueueType(queueType);
 
-    await AudioService.customAction(AudioPlayerTask.PLAY_SONG_BY_ID, {"data" : song.id.toString()});
+    await AudioService.customAction(
+        AudioPlayerTask.PLAY_SONG_BY_ID, {"data": song.id.toString()});
   } //end class playSong
 
   Future<void> _changeQueueType(QueueType queueType) async {
@@ -137,8 +154,7 @@ class MusicController extends GetxController {
 
   Future<void> skipToPrevious() async {
     return AudioService.skipToPrevious();
-  }//end method skipToPrevious
-
+  } //end method skipToPrevious
 
   // old code
   ////////////////////////////////////////////////////////////
@@ -188,8 +204,6 @@ class MusicController extends GetxController {
     return Future.value(true);
   }
 
-
-
   Future<void> stopSong() async {
     await _audioPlayer.stop();
 
@@ -215,7 +229,6 @@ class MusicController extends GetxController {
                 : duration.inMilliseconds));
     return Future.value(true);
   } //end seek
-
 
   void toggleRepeat() {
     var repeatTypes = RepeatType.values;
