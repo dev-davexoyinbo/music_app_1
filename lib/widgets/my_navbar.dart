@@ -22,7 +22,7 @@ class MyNavBar extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          GetBuilder<MusicController>(builder: (_) => Visibility(
+          Obx(() => Visibility(
                 visible: musicController.currentSong.value != null,
                 child: GestureDetector(
                   onVerticalDragEnd: (DragEndDetails details){

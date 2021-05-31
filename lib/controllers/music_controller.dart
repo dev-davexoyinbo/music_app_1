@@ -17,7 +17,7 @@ void _entrypoint() => AudioServiceBackground.run(() => AudioPlayerTask());
 class MusicController extends GetxController {
   final songs = <SongModel>[].obs;
   int _currentSongId = -1.obs;
-  final Rx<SongModel?> currentSong = null.obs;
+  final Rx<SongModel?> currentSong = Rx<SongModel?>(null);
   final AudioPlayer _audioPlayer = AudioPlayer();
   final isPlaying = false.obs;
   final currentPlayTime = Duration().obs;
@@ -39,7 +39,6 @@ class MusicController extends GetxController {
     await AudioService.start(backgroundTaskEntrypoint: _entrypoint);
     await _getSongs();
     await _updateQueue(songs.value);
-
     AudioService.currentMediaItemStream.listen(_currentMediaItemLister);
 
     ///////////////////////////////
@@ -69,7 +68,7 @@ class MusicController extends GetxController {
       return;
 
     currentSong.value = songs
-        .firstWhereOrNull((SongModel element) => element.id == _currentSongId);
+        .firstWhereOrNull((SongModel element) => element.id.toString() == mediaItem.id);
   }//end method _currentMediaItemLister
 
   Stream<List<SongModel>> getSongsStream() {
@@ -107,6 +106,42 @@ class MusicController extends GetxController {
         path: songModel.data);
   } //end method _convertSongModelToMediaItem
 
+  Future<void> playSong(SongModel? song,
+      {QueueType queueType = QueueType.SONG}) async {
+
+    if (song == null) return;
+
+    await _changeQueueType(queueType);
+
+    await AudioService.customAction(AudioPlayerTask.PLAY_SONG_BY_ID, {"data" : song.id.toString()});
+    //
+    // if (_queue.firstWhereOrNull((SongModel element) => element.id == song.id) ==
+    //     null) return Future.value(false);
+    //
+    // int success = await _audioPlayer.play(song.data, isLocal: true);
+    // if (success == 1) {
+    //   this.isPlaying.value = true;
+    //   this._currentSongId = song.id;
+    //
+    //   update();
+    //   return Future.value(true);
+    // }
+    // return Future.value(false);
+  } //end class playSong
+
+  Future<void> _changeQueueType(QueueType queueType) async {
+    if (_queueType.value == queueType) return;
+
+    _queueType.value = queueType;
+
+    switch (_queueType.value) {
+      case QueueType.SONG:
+        await _updateQueue(songs);
+        break;
+    }
+  }
+
+
   // old code
   ////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////
@@ -139,34 +174,6 @@ class MusicController extends GetxController {
     return AssetImage("assets/images/placeholder_image.jpg");
   }
 
-  Future<bool> playSongById(int id) async {
-    SongModel song =
-        songs.firstWhere((SongModel songModel) => songModel.id == id);
-
-    return playSong(song);
-  }
-
-  Future<bool> playSong(SongModel? song,
-      {QueueType queueType = QueueType.SONG}) async {
-
-    if (song == null) return Future.value(false);
-
-    changeQueueType(queueType);
-
-    if (_queue.firstWhereOrNull((SongModel element) => element.id == song.id) ==
-        null) return Future.value(false);
-
-    int success = await _audioPlayer.play(song.data, isLocal: true);
-    if (success == 1) {
-      this.isPlaying.value = true;
-      this._currentSongId = song.id;
-
-      update();
-      return Future.value(true);
-    }
-    return Future.value(false);
-  } //end class playSong
-
   Future<bool> pauseSong() async {
     await _audioPlayer.pause();
 
@@ -183,7 +190,7 @@ class MusicController extends GetxController {
     return Future.value(true);
   }
 
-  Future<bool> skipToNext({bool onCompletion = false}) async {
+  Future<void> skipToNext({bool onCompletion = false}) async {
     // If onCompletion and repeat is repeat one
     if (onCompletion && repeatType.value == RepeatType.REPEAT_ONE) {
       return playSong(currentSong.value);
@@ -212,7 +219,7 @@ class MusicController extends GetxController {
     return playSong(nextSong);
   } //end method skipToNext
 
-  Future<bool> skipToPrevious() async {
+  Future<void> skipToPrevious() async {
     SongModel? nextSong;
 
     if (currentSong == null) {
@@ -229,7 +236,7 @@ class MusicController extends GetxController {
     return playSong(nextSong);
   }
 
-  Future<bool> stopSong() async {
+  Future<void> stopSong() async {
     await _audioPlayer.stop();
 
     this.isPlaying.value = false;
@@ -237,7 +244,7 @@ class MusicController extends GetxController {
     return Future.value(true);
   }
 
-  Future<bool> clearSong() async {
+  Future<void> clearSong() async {
     await stopSong();
     this._currentSongId = -1;
 
@@ -255,17 +262,6 @@ class MusicController extends GetxController {
     return Future.value(true);
   } //end seek
 
-  Future<void> changeQueueType(QueueType queueType) async {
-    if (_queueType.value == queueType) return;
-
-    _queueType.value = queueType;
-
-    switch (_queueType.value) {
-      case QueueType.SONG:
-        await _updateQueue(songs);
-        break;
-    }
-  }
 
   void toggleRepeat() {
     var repeatTypes = RepeatType.values;
