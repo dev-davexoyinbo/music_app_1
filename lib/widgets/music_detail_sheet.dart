@@ -53,7 +53,7 @@ class MusicDetailSheet extends StatelessWidget {
             child: GetBuilder<MusicController>(
               builder: (_) => FutureBuilder<ImageProvider>(
                 future:
-                    musicController.getAudioImage(musicController.currentSong),
+                    musicController.getAudioImage(musicController.currentSong.value),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
                     return Container(
@@ -94,8 +94,8 @@ class MusicDetailSheet extends StatelessWidget {
                     Expanded(
                       child: GetBuilder<MusicController>(
                         builder: (_) => Text(
-                          musicController.currentSong != null
-                              ? musicController.currentSong!.title
+                          musicController.currentSong.value != null
+                              ? musicController.currentSong.value!.title
                               : "",
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -121,8 +121,8 @@ class MusicDetailSheet extends StatelessWidget {
                 SizedBox(height: 7),
                 GetBuilder<MusicController>(
                   builder: (_) => Text(
-                    musicController.currentSong != null
-                        ? musicController.currentSong!.artist
+                    musicController.currentSong.value != null
+                        ? musicController.currentSong.value!.artist
                         : "",
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(color: MyTheme.darkColorLight2),

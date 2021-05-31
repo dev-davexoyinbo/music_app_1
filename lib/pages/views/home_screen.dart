@@ -53,21 +53,19 @@ class _HomeScreenState extends State<HomeScreen>
               body: TabBarView(
                 controller: _tabController,
                 children: [
-                  FutureBuilder(
-                      future: musicController.getSongs(),
+                  StreamBuilder(
+                      stream: musicController.getSongsStream(),
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.done) {
-                          if (snapshot.hasError) {
-                            return _ErrorWidget();
-                          }
-                          return TracksTab();
-                        } else {
+                        if (snapshot.hasError) return _ErrorWidget();
+
+                        if (!snapshot.hasData)
                           return Center(
                             child: CircularProgressIndicator(
                               color: MyTheme.accentColor,
                             ),
                           );
-                        }
+
+                        return TracksTab();
                       }),
                   Center(child: Text("Tab two")),
                 ],

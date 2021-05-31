@@ -23,7 +23,7 @@ class MyNavBar extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           GetBuilder<MusicController>(builder: (_) => Visibility(
-                visible: musicController.currentSong != null,
+                visible: musicController.currentSong.value != null,
                 child: GestureDetector(
                   onVerticalDragEnd: (DragEndDetails details){
                     if((details.primaryVelocity ?? 0 ) < -8)

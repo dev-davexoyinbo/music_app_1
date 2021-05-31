@@ -28,7 +28,7 @@ class PlayingWidgetSm extends StatelessWidget {
                   children: [
                     FutureBuilder<ImageProvider>(
                       future: musicController
-                          .getAudioImage(musicController.currentSong!),
+                          .getAudioImage(musicController.currentSong.value),
                       builder: (context, snapshot) {
                         ImageProvider image =
                             musicController.placeholderImage();
@@ -51,7 +51,7 @@ class PlayingWidgetSm extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Obx(() => Text(
-                                musicController.currentSong!.title,
+                                musicController.currentSong.value!.title,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontSize: 16,
@@ -61,7 +61,7 @@ class PlayingWidgetSm extends StatelessWidget {
                               )),
                           SizedBox(height: 3),
                           Obx(() => Text(
-                                musicController.currentSong!.artist,
+                                musicController.currentSong.value!.artist,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   color: Colors.grey[400],

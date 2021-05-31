@@ -1,14 +1,23 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:audio_service/audio_service.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:music_app_trial_1/models/my_song_model.dart';
 import 'package:music_app_trial_1/models/queue_type.dart';
 import 'package:music_app_trial_1/models/repeat_type.dart';
+import 'package:music_app_trial_1/services/audio_player_task.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:collection/collection.dart';
+
+void _entrypoint() => AudioServiceBackground.run(() => AudioPlayerTask());
 
 class MusicController extends GetxController {
   final songs = <SongModel>[].obs;
   int _currentSongId = -1.obs;
+  final Rx<SongModel?> currentSong = null.obs;
   final AudioPlayer _audioPlayer = AudioPlayer();
   final isPlaying = false.obs;
   final currentPlayTime = Duration().obs;
@@ -18,11 +27,26 @@ class MusicController extends GetxController {
   final repeatType = RepeatType.NO_REPEAT.obs;
   final shuffle = false.obs;
 
-  // final songsFetched
+  // new code
+  final StreamController<List<SongModel>> _songsStreamController =
+      StreamController<List<SongModel>>();
+  late final Stream<List<SongModel>> _songsStream;
 
   @override
-  void onInit() {
+  void onInit() async {
     super.onInit();
+    _songsStream = _songsStreamController.stream.distinct();
+    await AudioService.start(backgroundTaskEntrypoint: _entrypoint);
+    await _getSongs();
+    await _updateQueue(songs.value);
+
+    AudioService.currentMediaItemStream.listen(_currentMediaItemLister);
+
+    ///////////////////////////////
+    ///////////////////////////////
+    ///////////////////////////////
+    ///////////////////////////////
+
     _audioPlayer.onAudioPositionChanged.listen((Duration duration) {
       currentPlayTime.value = duration;
     });
@@ -32,36 +56,71 @@ class MusicController extends GetxController {
     _audioPlayer.onPlayerCompletion.listen((event) {
       skipToNext(onCompletion: true);
     });
-  }
+  } // end method onInit
 
   @override
   void onClose() {
     _audioPlayer.release();
+    _songsStreamController.close();
   }
 
-  SongModel? get currentSong {
-    return songs
+  void _currentMediaItemLister(MediaItem? mediaItem) {
+    if(mediaItem == null)
+      return;
+
+    currentSong.value = songs
         .firstWhereOrNull((SongModel element) => element.id == _currentSongId);
-  }
+  }//end method _currentMediaItemLister
 
-  Future<bool> requestPermission() async {
-    bool val = false;
-    if (!(await OnAudioQuery().permissionsStatus()))
-      val = await OnAudioQuery().permissionsRequest();
+  Stream<List<SongModel>> getSongsStream() {
+    return _songsStream;
+  } //end method getSongsStream
 
-    return Future.value(val);
-  }
-
-  Future<bool> getSongs() async {
+  Future<void> _getSongs() async {
     print("Getting all songs from device storage");
-    await requestPermission();
+    await _requestPermission();
     List<SongModel> songs = await OnAudioQuery().querySongs();
 
-    this.songs.removeRange(0, this.songs.length);
+    this.songs.clear();
     this.songs.addAll(songs);
 
-    return Future.value(true);
-  } //end method getArtists2
+    _songsStreamController.sink.add(this.songs);
+  } //end method _getSongs
+
+  Future<void> _updateQueue(List<SongModel> songModels)  async {
+    var mySongModels = songModels
+        .map((songModel) => json.encode(_convertSongModelToMySongModel(songModel).toJson()))
+        .toList();
+
+    await AudioService.customAction(AudioPlayerTask.UPDATE_QUEUE, {"data" : mySongModels});
+    _queue.clear();
+    _queue.addAll(songModels);
+  } //end method _updateQueue
+
+  MySongModel _convertSongModelToMySongModel(SongModel songModel) {
+    return MySongModel(
+        id: songModel.id.toString(),
+        album: songModel.album,
+        title: songModel.title,
+        artist: songModel.artist,
+        duration: songModel.duration,
+        path: songModel.data);
+  } //end method _convertSongModelToMediaItem
+
+  // old code
+  ////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////
+
+  Future<void> _requestPermission() async {
+    if (!(await OnAudioQuery().permissionsStatus()))
+      await OnAudioQuery().permissionsRequest();
+  }
 
   Future<ImageProvider> getAudioImage(SongModel? songModel) async {
     if (songModel != null && songModel.artwork == null) {
@@ -89,6 +148,7 @@ class MusicController extends GetxController {
 
   Future<bool> playSong(SongModel? song,
       {QueueType queueType = QueueType.SONG}) async {
+
     if (song == null) return Future.value(false);
 
     changeQueueType(queueType);
@@ -126,7 +186,7 @@ class MusicController extends GetxController {
   Future<bool> skipToNext({bool onCompletion = false}) async {
     // If onCompletion and repeat is repeat one
     if (onCompletion && repeatType.value == RepeatType.REPEAT_ONE) {
-      return playSong(currentSong);
+      return playSong(currentSong.value);
     }
 
     SongModel? nextSong;
@@ -150,7 +210,7 @@ class MusicController extends GetxController {
     }
 
     return playSong(nextSong);
-  }
+  } //end method skipToNext
 
   Future<bool> skipToPrevious() async {
     SongModel? nextSong;
@@ -195,15 +255,14 @@ class MusicController extends GetxController {
     return Future.value(true);
   } //end seek
 
-  void changeQueueType(QueueType queueType) {
+  Future<void> changeQueueType(QueueType queueType) async {
     if (_queueType.value == queueType) return;
 
     _queueType.value = queueType;
 
     switch (_queueType.value) {
       case QueueType.SONG:
-        _queue.removeRange(0, _queue.length);
-        _queue.addAll(songs);
+        await _updateQueue(songs);
         break;
     }
   }

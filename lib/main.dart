@@ -1,3 +1,4 @@
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:music_app_trial_1/controllers/home_controller.dart';
@@ -10,9 +11,12 @@ void main() => runApp(MyApp());
 class MyApp extends StatelessWidget {
 
   MyApp({Key? key}) : super(key: key){
-    Get.put(MusicController());
-    Get.put(MainController());
-    Get.put(HomeController());
+    Get.lazyPut<MusicController>(() => MusicController());
+    Get.lazyPut<MainController>(() => MainController());
+    Get.lazyPut<HomeController>(() => HomeController());
+    // Get.put(MusicController());
+    // Get.put(MainController());
+    // Get.put(HomeController());
   }
 
   @override
@@ -30,7 +34,7 @@ class MyApp extends StatelessWidget {
           displayColor: Colors.white,
         ),
       ),
-      home: HomeScreen(),
+      home:  AudioServiceWidget(child: HomeScreen()),
     );
   } //end build method
 } //end class MyApp
