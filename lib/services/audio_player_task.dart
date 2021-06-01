@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:audio_service/audio_service.dart';
@@ -9,25 +10,28 @@ class AudioPlayerTask extends BackgroundAudioTask {
   static const String UPDATE_QUEUE = "UPDATE_QUEUE";
 
   final AudioPlayer _audioPlayer = AudioPlayer();
-  bool _playing = false;
+  late StreamSubscription<dynamic> _onPlaySubscription;
 
   List<MediaItem> get _queue => AudioServiceBackground.queue ?? <MediaItem>[];
 
   bool get hasNext {
     MediaItem? currentItem = AudioServiceBackground.mediaItem;
 
-    if(currentItem == null){
+    if (currentItem == null) {
       return false;
     }
 
-    int index = _queue.indexWhere(
-        (element) => element.id == currentItem.id);
+    int index = _queue.indexWhere((element) => element.id == currentItem.id);
 
-    if(index >= _queue.length) {
+    if (index >= _queue.length - 1) {
       return false;
     }
 
     return true;
+  }
+
+  bool get _playing {
+    return _audioPlayer.state == PlayerState.PLAYING;
   }
 
   @override
@@ -37,11 +41,19 @@ class AudioPlayerTask extends BackgroundAudioTask {
       _setState(position: duration);
     });
 
-    _audioPlayer.onPlayerCompletion.listen(_onCompletionListener);
-    _audioPlayer.onAudioPositionChanged.listen(_onAudioPositionChangedListener);
+    _onPlaySubscription =
+        _audioPlayer.onPlayerCompletion.listen(_onCompletionListener);
 
     _setState();
-  }//end method onStart
+  }
+
+  @override
+  Future<void> onStop() async {
+    await _onPlaySubscription.cancel();
+    await _audioPlayer.stop();
+    await _audioPlayer.release();
+    return await super.onStop();
+  } //end method onStart
 
   @override
   Future<dynamic> onCustomAction(String name, dynamic arguments) async {
@@ -61,34 +73,37 @@ class AudioPlayerTask extends BackgroundAudioTask {
     MediaItem currentMediaItem = AudioServiceBackground.mediaItem as MediaItem;
 
     var stopTheCurrentSong = () {
-      _playing = false;
       _setState();
     };
 
     switch (AudioServiceBackground.state.repeatMode) {
       // AudioServiceRepeatMode { none, one, all, group }
       case AudioServiceRepeatMode.none:
-        if(hasNext) onSkipToNext();
-        else stopTheCurrentSong();
+        if (hasNext)
+          onSkipToNext();
+        else
+          stopTheCurrentSong();
         break;
       case AudioServiceRepeatMode.group:
-        if(hasNext) onSkipToNext();
-        else stopTheCurrentSong();
+        if (hasNext)
+          onSkipToNext();
+        else
+          stopTheCurrentSong();
         break;
       case AudioServiceRepeatMode.all:
-        if(hasNext) onSkipToNext();
-        else if(_queue.length > 0) onPlayFromMediaId(_queue[0].id);
-        else stopTheCurrentSong();
+        if (hasNext) {
+          onSkipToNext();
+        } else if (_queue.length > 0) {
+          onPlayFromMediaId(_queue[0].id);
+        } else {
+          stopTheCurrentSong();
+        }
         break;
       case AudioServiceRepeatMode.one:
         onPlayFromMediaId(currentMediaItem.id);
         break;
     }
   } //end method _onCompletionListener
-
-  void _onAudioPositionChangedListener(Duration duration) {
-    _setState(position: duration);
-  }// end method _onDurationChangedListener
 
   MediaItem _convertMySongModelToMediaItem(MySongModel model) {
     return MediaItem(
@@ -103,8 +118,6 @@ class AudioPlayerTask extends BackgroundAudioTask {
   } //end method _convertMySongModelToMediaItem
 
   void _updateQueue(List<MediaItem> mediaItems) {
-    print("Updating queue");
-    // _queue = mediaItems;
     AudioServiceBackground.setQueue(mediaItems);
   } //end method _updateQueue
 
@@ -124,10 +137,25 @@ class AudioPlayerTask extends BackgroundAudioTask {
         return;
     }
 
-    _audioPlayer.resume();
-    _playing = true;
+    await _audioPlayer.resume();
     _setState(processingState: AudioProcessingState.none);
   }
+
+  @override
+  Future<void> onPause() async {
+    await _audioPlayer.pause();
+    _setState();
+  }
+
+  @override
+  Future<void> onSeekTo(Duration position) async {
+    await _audioPlayer.seek(position);
+  } //end method onSeekTo
+
+  @override
+  Future<void> onSetRepeatMode(AudioServiceRepeatMode repeatMode) async {
+    _setState(repeatMode: repeatMode);
+  } //end method onSetRepeatMode
 
   @override
   Future<void> onPlayFromMediaId(String mediaId) async {
@@ -141,12 +169,9 @@ class AudioPlayerTask extends BackgroundAudioTask {
 
     if (result == 1) {
       AudioServiceBackground.setMediaItem(mediaItem);
-      _playing = true;
-      _setState();
-    } else {
-      _playing = false;
-      _setState();
     }
+
+    _setState();
   } //end method onPlayFromMediaId
 
   @override
@@ -155,7 +180,9 @@ class AudioPlayerTask extends BackgroundAudioTask {
   } // end method onPlay
 
   Future<void> _setState(
-      {AudioProcessingState? processingState, Duration? position}) async {
+      {AudioProcessingState? processingState,
+      Duration? position,
+      AudioServiceRepeatMode? repeatMode}) async {
     await AudioServiceBackground.setState(
       controls: getControls(),
       systemActions: [MediaAction.seekTo],
@@ -165,7 +192,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
       // speed,
       // updateTime,
       // androidCompactActions,
-      // repeatMode,
+      repeatMode: repeatMode ?? AudioServiceBackground.state.repeatMode,
       // shuffleMode,
     );
   } //end method _setState
@@ -177,7 +204,6 @@ class AudioPlayerTask extends BackgroundAudioTask {
         MediaControl.pause,
         MediaControl.skipToNext,
         MediaControl.stop,
-
       ];
     } else {
       return [
@@ -185,7 +211,6 @@ class AudioPlayerTask extends BackgroundAudioTask {
         MediaControl.play,
         MediaControl.skipToNext,
         MediaControl.stop,
-
       ];
     }
   } //end method getControls

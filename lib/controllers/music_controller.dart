@@ -15,7 +15,6 @@ void _entrypoint() => AudioServiceBackground.run(() => AudioPlayerTask());
 
 class MusicController extends GetxController {
   final songs = <SongModel>[].obs;
-  int _currentSongId = -1.obs;
   final Rx<SongModel?> currentSong = Rx<SongModel?>(null);
 
   // final AudioPlayer _audioPlayer = AudioPlayer();
@@ -24,7 +23,7 @@ class MusicController extends GetxController {
   final currentMaxTime = Duration().obs;
   final _queue = <SongModel>[].obs;
   final _queueType = QueueType.NULL.obs;
-  final repeatType = RepeatType.NO_REPEAT.obs;
+  final _audioRepeatMode = AudioServiceRepeatMode.none.obs;
   final shuffle = false.obs;
 
   // new code
@@ -32,12 +31,29 @@ class MusicController extends GetxController {
       StreamController<List<SongModel>>();
   late final Stream<List<SongModel>> _songsStream;
 
+  RepeatType get repeatType {
+    switch (_audioRepeatMode.value) {
+      case AudioServiceRepeatMode.one:
+        return RepeatType.REPEAT_ONE;
+      case AudioServiceRepeatMode.all:
+        return RepeatType.REPEAT_ALL;
+      case AudioServiceRepeatMode.none:
+        return RepeatType.NO_REPEAT;
+      case AudioServiceRepeatMode.group:
+        return RepeatType.REPEAT_ALL;
+      default:
+        return RepeatType.NO_REPEAT;
+    }
+  }
+
   @override
   void onInit() async {
     super.onInit();
     _songsStream = _songsStreamController.stream.distinct();
     AudioService.currentMediaItemStream.listen(_currentMediaItemLister);
     AudioService.queueStream.listen(_queueListener);
+    AudioService.positionStream.listen(_positionStreamListener);
+    AudioService.playbackStateStream.listen(_playBackStateListener);
 
     await AudioService.connect();
     if (!AudioService.running) {
@@ -58,24 +74,20 @@ class MusicController extends GetxController {
     await _getSongs();
     await _updateQueue(songs.value);
 
-    AudioService.setRepeatMode(AudioServiceRepeatMode.all); // none/one/all/group
+    AudioService.setRepeatMode(
+        AudioServiceRepeatMode.all); // none/one/all/group
     AudioService.setShuffleMode(AudioServiceShuffleMode.none); // none/all/group
-
-    ///////////////////////////////
-    ///////////////////////////////
-    ///////////////////////////////
-    ///////////////////////////////
-
-    // _audioPlayer.onAudioPositionChanged.listen((Duration duration) {
-    //   currentPlayTime.value = duration;
-    // });
-    // _audioPlayer.onDurationChanged.listen((Duration duration) {
-    //   currentMaxTime.value = duration;
-    // });
-    // _audioPlayer.onPlayerCompletion.listen((event) {
-    //   skipToNext(onCompletion: true);
-    // });
   } // end method onInit
+
+  void _playBackStateListener(PlaybackState state) {
+    isPlaying.value = state.playing;
+
+    _audioRepeatMode.value = state.repeatMode;
+  } //end method _playBackStateListener
+
+  void _positionStreamListener(Duration duration) {
+    currentPlayTime.value = duration;
+  } //end method _positionStreamListener
 
   @override
   void onClose() {
@@ -88,6 +100,7 @@ class MusicController extends GetxController {
 
     currentSong.value = songs.firstWhereOrNull(
         (SongModel element) => element.id.toString() == mediaItem.id);
+    currentMaxTime.value = mediaItem.duration as Duration;
   } //end method _currentMediaItemLister
 
   void _queueListener(List<MediaItem>? mediaItems) {
@@ -101,7 +114,7 @@ class MusicController extends GetxController {
         .where((element) => element != null)
         .toList() as List<SongModel>;
     print("Queue updated in controller: ${_queue.length}");
-  }//end method _queueListener
+  } //end method _queueListener
 
   Stream<List<SongModel>> getSongsStream() {
     return _songsStream;
@@ -167,15 +180,17 @@ class MusicController extends GetxController {
     return AudioService.skipToPrevious();
   } //end method skipToPrevious
 
-  // old code
-  ////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////
+  Future<void> pauseSong() async {
+    return AudioService.pause();
+  }
+
+  Future<void> resumeSong() async {
+    return AudioService.play();
+  }
+
+  Future<void> seek(Duration duration) async {
+    await AudioService.seekTo(duration);
+  } //end seek
 
   Future<void> _requestPermission() async {
     if (!(await OnAudioQuery().permissionsStatus()))
@@ -199,21 +214,29 @@ class MusicController extends GetxController {
     return AssetImage("assets/images/placeholder_image.jpg");
   }
 
-  Future<bool> pauseSong() async {
-    // await _audioPlayer.pause();
+  Future<void> toggleRepeat() async{
+    print("toggle repeat");
+    var repeatModes = [
+      AudioServiceRepeatMode.none,
+      AudioServiceRepeatMode.all,
+      AudioServiceRepeatMode.one
+    ];
 
-    this.isPlaying.value = false;
+    int newIndex =
+        (repeatModes.indexOf(_audioRepeatMode.value) + 1) % repeatModes.length;
 
-    return Future.value(true);
-  }
+    await AudioService.setRepeatMode(repeatModes[newIndex]);
+  }//end method toggleRepeat
 
-  Future<bool> resumeSong() async {
-    // await _audioPlayer.resume();
-
-    this.isPlaying.value = true;
-
-    return Future.value(true);
-  }
+  // old code
+  ////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////
 
   Future<void> stopSong() async {
     // await _audioPlayer.stop();
@@ -225,28 +248,11 @@ class MusicController extends GetxController {
 
   Future<void> clearSong() async {
     await stopSong();
-    this._currentSongId = -1;
+    // this._currentSongId = -1;
 
     update();
 
     return Future.value(true);
-  }
-
-  Future<bool> seek(Duration duration) async {
-    // _audioPlayer.seek(Duration(
-    //     milliseconds:
-    //         duration.inMilliseconds > currentMaxTime.value.inMilliseconds
-    //             ? currentMaxTime.value.inMilliseconds
-    //             : duration.inMilliseconds));
-    return Future.value(true);
-  } //end seek
-
-  void toggleRepeat() {
-    var repeatTypes = RepeatType.values;
-    int newIndex =
-        (repeatTypes.indexOf(repeatType.value) + 1) % repeatTypes.length;
-
-    repeatType.value = repeatTypes[newIndex];
   }
 
   void toggleShuffle() {

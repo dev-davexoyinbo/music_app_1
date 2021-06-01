@@ -199,7 +199,7 @@ class MusicDetailSheet extends StatelessWidget {
                     Obx(() {
                       IconData icon;
                       Color? color;
-                      switch (musicController.repeatType.value) {
+                      switch (musicController.repeatType) {
                         case RepeatType.NO_REPEAT:
                           icon = Icons.repeat;
                           color = Colors.grey[500];
