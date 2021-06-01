@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:music_app_trial_1/models/my_song_model.dart';
 import 'package:music_app_trial_1/models/queue_type.dart';
 import 'package:music_app_trial_1/models/repeat_type.dart';
+import 'package:music_app_trial_1/my_theme.dart';
 import 'package:music_app_trial_1/services/audio_player_task.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:collection/collection.dart';
@@ -59,10 +60,11 @@ class MusicController extends GetxController {
     if (!AudioService.running) {
       var x = await AudioService.start(
         backgroundTaskEntrypoint: _entrypoint,
-        androidNotificationChannelName: 'Audio Service Demo',
+        androidNotificationChannelName: 'Humming Bird',
         // Enable this if you want the Android service to exit the foreground state on pause.
         //androidStopForegroundOnPause: true,
-        androidNotificationColor: 0xFF2196f3,
+        androidNotificationColor: MyTheme.darkColorBlur.value,
+        androidShowNotificationBadge: true,
         androidNotificationIcon: 'mipmap/ic_launcher',
         androidEnableQueue: true,
       );

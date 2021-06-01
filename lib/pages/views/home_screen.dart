@@ -39,65 +39,67 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: MyTheme.darkColor,
-      body: SizedBox.expand(
-        child: Stack(
-          children: [
-            NestedScrollView(
-              headerSliverBuilder: (context, isScrolled) {
-                return [
-                  MySliverAppBar(tabController: _tabController),
-                ];
-              },
-              body: TabBarView(
-                controller: _tabController,
-                children: [
-                  StreamBuilder(
-                      stream: musicController.getSongsStream(),
-                      builder: (context, snapshot) {
-                        if (snapshot.hasError) return _ErrorWidget();
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: MyTheme.darkColor,
+        body: SizedBox.expand(
+          child: Stack(
+            children: [
+              NestedScrollView(
+                headerSliverBuilder: (context, isScrolled) {
+                  return [
+                    MySliverAppBar(tabController: _tabController),
+                  ];
+                },
+                body: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    StreamBuilder(
+                        stream: musicController.getSongsStream(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasError) return _ErrorWidget();
 
-                        if (!snapshot.hasData)
-                          return Center(
-                            child: CircularProgressIndicator(
-                              color: MyTheme.accentColor,
-                            ),
-                          );
+                          if (!snapshot.hasData)
+                            return Center(
+                              child: CircularProgressIndicator(
+                                color: MyTheme.accentColor,
+                              ),
+                            );
 
-                        return TracksTab();
-                      }),
-                  Center(child: Text("Tab two")),
-                ],
-              ),
-            ),
-            Obx(() {
-              return AnimatedPositioned(
-                duration: Duration(milliseconds: 500),
-                curve: Curves.easeInOut,
-                top: mainController.showMediaSheet.value
-                    ? 65
-                    : MediaQuery.of(context).size.height,
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height - 65,
-                child: GestureDetector(
-                  onVerticalDragEnd: (DragEndDetails details) {
-                    if ((details.primaryVelocity ?? 0) > 8)
-                      mainController.showMediaSheet(false);
-                  },
-                  child: MusicDetailSheet(),
+                          return TracksTab();
+                        }),
+                    Center(child: Text("Tab two")),
+                  ],
                 ),
-              );
-            }),
-          ],
+              ),
+              Obx(() {
+                return AnimatedPositioned(
+                  duration: Duration(milliseconds: 500),
+                  curve: Curves.easeInOut,
+                  top: mainController.showMediaSheet.value
+                      ? 0
+                      : MediaQuery.of(context).size.height,
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height,
+                  child: GestureDetector(
+                    onVerticalDragEnd: (DragEndDetails details) {
+                      if ((details.primaryVelocity ?? 0) > 8)
+                        mainController.showMediaSheet(false);
+                    },
+                    child: MusicDetailSheet(),
+                  ),
+                );
+              }),
+            ],
+          ),
         ),
-      ),
-      bottomNavigationBar: Obx(
-        () => Visibility(
-          visible: !mainController.showMediaSheet.value,
-          maintainAnimation: true,
-          maintainState: true,
-          child: MyNavBar(),
+        bottomNavigationBar: Obx(
+          () => Visibility(
+            visible: !mainController.showMediaSheet.value,
+            maintainAnimation: true,
+            maintainState: true,
+            child: MyNavBar(),
+          ),
         ),
       ),
     );

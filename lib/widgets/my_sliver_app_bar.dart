@@ -22,7 +22,7 @@ class _MySliverAppBarState extends State<MySliverAppBar> {
     return SliverAppBar(
       backgroundColor: MyTheme.darkColor,
       elevation: 2,
-      expandedHeight: 56 * 2 + 180,
+      expandedHeight: 56 * 2 + 190,
       pinned: true,
       // floating: true,
       // snap: true,
