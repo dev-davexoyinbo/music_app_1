@@ -8,6 +8,7 @@ import 'package:collection/collection.dart';
 
 class AudioPlayerTask extends BackgroundAudioTask {
   static const String UPDATE_QUEUE = "UPDATE_QUEUE";
+  static const String STOP_SONG = "STOP_SONG";
 
   final AudioPlayer _audioPlayer = AudioPlayer();
   late StreamSubscription<dynamic> _onPlaySubscription;
@@ -65,6 +66,11 @@ class AudioPlayerTask extends BackgroundAudioTask {
                 MySongModel.fromJson(json.decode(e))))
             .toList();
         _updateQueue(mediaItems);
+        break;
+      case STOP_SONG:
+        print("Stopping song");
+        await _audioPlayer.stop();
+        await _setState();
         break;
     } //end switch case
   } //end method onCustomAction
@@ -198,20 +204,31 @@ class AudioPlayerTask extends BackgroundAudioTask {
   } //end method _setState
 
   List<MediaControl> getControls() {
-    if (_playing) {
-      return [
-        MediaControl.skipToPrevious,
-        MediaControl.pause,
-        MediaControl.skipToNext,
-        MediaControl.stop,
-      ];
-    } else {
-      return [
-        MediaControl.skipToPrevious,
-        MediaControl.play,
-        MediaControl.skipToNext,
-        MediaControl.stop,
-      ];
-    }
+    List<MediaControl> controls = <MediaControl>[
+      MediaControl.skipToPrevious,
+      if (_playing) ...[MediaControl.pause] else ...[MediaControl.play],
+      MediaControl.skipToNext,
+      if (_audioPlayer.state == PlayerState.STOPPED)
+        ...[]
+      else ...[MediaControl.stop],
+    ];
+
+    return controls;
+
+    // if (_playing) {
+    //   return [
+    //     MediaControl.skipToPrevious,
+    //     MediaControl.pause,
+    //     MediaControl.skipToNext,
+    //     MediaControl.stop,
+    //   ];
+    // } else {
+    //   return [
+    //     MediaControl.skipToPrevious,
+    //     MediaControl.play,
+    //     MediaControl.skipToNext,
+    //     MediaControl.stop,
+    //   ];
+    // }
   } //end method getControls
 } //end class AudioPlayerTask

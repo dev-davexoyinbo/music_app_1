@@ -230,6 +230,15 @@ class MusicController extends GetxController {
     await AudioService.setRepeatMode(repeatModes[newIndex]);
   }//end method toggleRepeat
 
+  Future<void> stopSong() async {
+    await AudioService.customAction(AudioPlayerTask.STOP_SONG);
+  }
+
+  Future<void> clearSong() async {
+    await stopSong();
+    currentSong.value = null;
+  }
+
   // old code
   ////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////
@@ -240,22 +249,9 @@ class MusicController extends GetxController {
   ////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////
 
-  Future<void> stopSong() async {
-    // await _audioPlayer.stop();
 
-    this.isPlaying.value = false;
 
-    return Future.value(true);
-  }
 
-  Future<void> clearSong() async {
-    await stopSong();
-    // this._currentSongId = -1;
-
-    update();
-
-    return Future.value(true);
-  }
 
   void toggleShuffle() {
     shuffle.value = !shuffle.value;
