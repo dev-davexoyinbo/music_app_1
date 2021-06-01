@@ -54,8 +54,7 @@ class TrackStrip extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      GetBuilder<MusicController>(
-                        builder: (_) => Text(
+                      Obx(() => Text(
                           name,
                           overflow: TextOverflow.ellipsis,
                           textWidthBasis: TextWidthBasis.parent,
@@ -72,8 +71,7 @@ class TrackStrip extends StatelessWidget {
                       SizedBox(
                         height: 2,
                       ),
-                      GetBuilder<MusicController>(
-                        builder: (_) => Text(
+                      Obx(() => Text(
                           artist,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -94,8 +92,7 @@ class TrackStrip extends StatelessWidget {
           SizedBox(width: 10),
           Row(
             children: [
-              GetBuilder<MusicController>(
-                builder: (_) => Text(
+              Obx(() => Text(
                   timeString,
                   style: TextStyle(
                       color: musicController.currentSong.value != null && musicController.currentSong.value!.id == id

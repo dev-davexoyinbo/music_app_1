@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:audio_service/audio_service.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:music_app_trial_1/models/my_song_model.dart';
@@ -18,7 +17,8 @@ class MusicController extends GetxController {
   final songs = <SongModel>[].obs;
   int _currentSongId = -1.obs;
   final Rx<SongModel?> currentSong = Rx<SongModel?>(null);
-  final AudioPlayer _audioPlayer = AudioPlayer();
+
+  // final AudioPlayer _audioPlayer = AudioPlayer();
   final isPlaying = false.obs;
   final currentPlayTime = Duration().obs;
   final currentMaxTime = Duration().obs;
@@ -36,8 +36,11 @@ class MusicController extends GetxController {
   void onInit() async {
     super.onInit();
     _songsStream = _songsStreamController.stream.distinct();
+    AudioService.currentMediaItemStream.listen(_currentMediaItemLister);
+    AudioService.queueStream.listen(_queueListener);
+
     await AudioService.connect();
-    if(!AudioService.running){
+    if (!AudioService.running) {
       var x = await AudioService.start(
         backgroundTaskEntrypoint: _entrypoint,
         androidNotificationChannelName: 'Audio Service Demo',
@@ -48,36 +51,34 @@ class MusicController extends GetxController {
         androidEnableQueue: true,
       );
       print(x);
-    }else {
+    } else {
       print("Audio service is running");
     }
 
     await _getSongs();
     await _updateQueue(songs.value);
-    AudioService.currentMediaItemStream.listen(_currentMediaItemLister);
 
-    // initialize current song
-    // _currentMediaItemLister(AudioServiceBackground.mediaItem);
+    AudioService.setRepeatMode(AudioServiceRepeatMode.all); // none/one/all/group
+    AudioService.setShuffleMode(AudioServiceShuffleMode.none); // none/all/group
 
     ///////////////////////////////
     ///////////////////////////////
     ///////////////////////////////
     ///////////////////////////////
 
-    _audioPlayer.onAudioPositionChanged.listen((Duration duration) {
-      currentPlayTime.value = duration;
-    });
-    _audioPlayer.onDurationChanged.listen((Duration duration) {
-      currentMaxTime.value = duration;
-    });
-    _audioPlayer.onPlayerCompletion.listen((event) {
-      skipToNext(onCompletion: true);
-    });
+    // _audioPlayer.onAudioPositionChanged.listen((Duration duration) {
+    //   currentPlayTime.value = duration;
+    // });
+    // _audioPlayer.onDurationChanged.listen((Duration duration) {
+    //   currentMaxTime.value = duration;
+    // });
+    // _audioPlayer.onPlayerCompletion.listen((event) {
+    //   skipToNext(onCompletion: true);
+    // });
   } // end method onInit
 
   @override
   void onClose() {
-    _audioPlayer.release();
     _songsStreamController.close();
     AudioService.disconnect();
   }
@@ -88,6 +89,19 @@ class MusicController extends GetxController {
     currentSong.value = songs.firstWhereOrNull(
         (SongModel element) => element.id.toString() == mediaItem.id);
   } //end method _currentMediaItemLister
+
+  void _queueListener(List<MediaItem>? mediaItems) {
+    if (mediaItems == null) {
+      _queue.value = [];
+    }
+
+    _queue.value = mediaItems
+        ?.map((mediaItem) => songs.firstWhereOrNull(
+            (SongModel element) => element.id.toString() == mediaItem.id))
+        .where((element) => element != null)
+        .toList() as List<SongModel>;
+    print("Queue updated in controller: ${_queue.length}");
+  }//end method _queueListener
 
   Stream<List<SongModel>> getSongsStream() {
     return _songsStream;
@@ -112,8 +126,6 @@ class MusicController extends GetxController {
 
     await AudioService.customAction(
         AudioPlayerTask.UPDATE_QUEUE, {"data": mySongModels});
-    _queue.clear();
-    _queue.addAll(songModels);
   } //end method _updateQueue
 
   MySongModel _convertSongModelToMySongModel(SongModel songModel) {
@@ -132,8 +144,7 @@ class MusicController extends GetxController {
 
     await _changeQueueType(queueType);
 
-    await AudioService.customAction(
-        AudioPlayerTask.PLAY_SONG_BY_ID, {"data": song.id.toString()});
+    await AudioService.playFromMediaId(song.id.toString());
   } //end class playSong
 
   Future<void> _changeQueueType(QueueType queueType) async {
@@ -189,7 +200,7 @@ class MusicController extends GetxController {
   }
 
   Future<bool> pauseSong() async {
-    await _audioPlayer.pause();
+    // await _audioPlayer.pause();
 
     this.isPlaying.value = false;
 
@@ -197,7 +208,7 @@ class MusicController extends GetxController {
   }
 
   Future<bool> resumeSong() async {
-    await _audioPlayer.resume();
+    // await _audioPlayer.resume();
 
     this.isPlaying.value = true;
 
@@ -205,7 +216,7 @@ class MusicController extends GetxController {
   }
 
   Future<void> stopSong() async {
-    await _audioPlayer.stop();
+    // await _audioPlayer.stop();
 
     this.isPlaying.value = false;
 
@@ -222,11 +233,11 @@ class MusicController extends GetxController {
   }
 
   Future<bool> seek(Duration duration) async {
-    _audioPlayer.seek(Duration(
-        milliseconds:
-            duration.inMilliseconds > currentMaxTime.value.inMilliseconds
-                ? currentMaxTime.value.inMilliseconds
-                : duration.inMilliseconds));
+    // _audioPlayer.seek(Duration(
+    //     milliseconds:
+    //         duration.inMilliseconds > currentMaxTime.value.inMilliseconds
+    //             ? currentMaxTime.value.inMilliseconds
+    //             : duration.inMilliseconds));
     return Future.value(true);
   } //end seek
 

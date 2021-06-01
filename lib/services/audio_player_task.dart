@@ -5,35 +5,30 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:music_app_trial_1/models/my_song_model.dart';
 import 'package:collection/collection.dart';
 
-MediaControl playControl = MediaControl(
-    androidIcon: 'drawable/play_arrow',
-    label: 'Play',
-    action: MediaAction.play);
-
-MediaControl pauseControl = MediaControl(
-    androidIcon: 'drawable/pause', label: 'Pause', action: MediaAction.pause);
-
-MediaControl skipToNextControl = MediaControl(
-    androidIcon: 'drawable/skip_to_next',
-    label: 'Next',
-    action: MediaAction.skipToPrevious);
-
-MediaControl skipToPreviousControl = MediaControl(
-    androidIcon: 'drawable/skip_to_prev',
-    label: 'Previous',
-    action: MediaAction.play);
-
-MediaControl stopControl = MediaControl(
-    androidIcon: 'drawable/stop', label: 'Stop', action: MediaAction.stop);
-
 class AudioPlayerTask extends BackgroundAudioTask {
   static const String UPDATE_QUEUE = "UPDATE_QUEUE";
-  static const String PLAY_SONG_BY_ID = "PLAY_SONG";
 
   final AudioPlayer _audioPlayer = AudioPlayer();
-  List<MediaItem> _queue = <MediaItem>[];
-  AudioProcessingState _audioProcessingState = AudioProcessingState.none;
   bool _playing = false;
+
+  List<MediaItem> get _queue => AudioServiceBackground.queue ?? <MediaItem>[];
+
+  bool get hasNext {
+    MediaItem? currentItem = AudioServiceBackground.mediaItem;
+
+    if(currentItem == null){
+      return false;
+    }
+
+    int index = _queue.indexWhere(
+        (element) => element.id == currentItem.id);
+
+    if(index >= _queue.length) {
+      return false;
+    }
+
+    return true;
+  }
 
   @override
   Future<void> onStart(Map<String, dynamic>? params) async {
@@ -41,7 +36,12 @@ class AudioPlayerTask extends BackgroundAudioTask {
     _audioPlayer.onAudioPositionChanged.listen((Duration duration) {
       _setState(position: duration);
     });
-  }
+
+    _audioPlayer.onPlayerCompletion.listen(_onCompletionListener);
+    _audioPlayer.onAudioPositionChanged.listen(_onAudioPositionChangedListener);
+
+    _setState();
+  }//end method onStart
 
   @override
   Future<dynamic> onCustomAction(String name, dynamic arguments) async {
@@ -54,11 +54,41 @@ class AudioPlayerTask extends BackgroundAudioTask {
             .toList();
         _updateQueue(mediaItems);
         break;
-      case PLAY_SONG_BY_ID:
-        _playSongById(arguments["data"] as String);
-        break;
     } //end switch case
   } //end method onCustomAction
+
+  void _onCompletionListener(_) {
+    MediaItem currentMediaItem = AudioServiceBackground.mediaItem as MediaItem;
+
+    var stopTheCurrentSong = () {
+      _playing = false;
+      _setState();
+    };
+
+    switch (AudioServiceBackground.state.repeatMode) {
+      // AudioServiceRepeatMode { none, one, all, group }
+      case AudioServiceRepeatMode.none:
+        if(hasNext) onSkipToNext();
+        else stopTheCurrentSong();
+        break;
+      case AudioServiceRepeatMode.group:
+        if(hasNext) onSkipToNext();
+        else stopTheCurrentSong();
+        break;
+      case AudioServiceRepeatMode.all:
+        if(hasNext) onSkipToNext();
+        else if(_queue.length > 0) onPlayFromMediaId(_queue[0].id);
+        else stopTheCurrentSong();
+        break;
+      case AudioServiceRepeatMode.one:
+        onPlayFromMediaId(currentMediaItem.id);
+        break;
+    }
+  } //end method _onCompletionListener
+
+  void _onAudioPositionChangedListener(Duration duration) {
+    _setState(position: duration);
+  }// end method _onDurationChangedListener
 
   MediaItem _convertMySongModelToMediaItem(MySongModel model) {
     return MediaItem(
@@ -73,18 +103,10 @@ class AudioPlayerTask extends BackgroundAudioTask {
   } //end method _convertMySongModelToMediaItem
 
   void _updateQueue(List<MediaItem> mediaItems) {
-    _queue = mediaItems;
+    print("Updating queue");
+    // _queue = mediaItems;
+    AudioServiceBackground.setQueue(mediaItems);
   } //end method _updateQueue
-
-  Future<void> _playSongById(String id) async {
-    MediaItem? mediaItem =
-        _queue.firstWhereOrNull((element) => element.id == id);
-
-    if (mediaItem == null) return;
-
-    await AudioServiceBackground.setMediaItem(mediaItem);
-    return AudioService.play();
-  } //end method _playSong
 
   String _getMediaPlayPath(MediaItem mediaItem) {
     if (mediaItem.extras == null) return "";
@@ -95,102 +117,76 @@ class AudioPlayerTask extends BackgroundAudioTask {
   @override
   Future<void> onPlay() async {
     if (AudioServiceBackground.mediaItem == null) {
-      if (_queue.length > 0)
+      if (_queue.length > 0) {
         await AudioServiceBackground.setMediaItem(_queue.first);
-      else
+        return onSkipToQueueItem(AudioServiceBackground.mediaItem!.id);
+      } else
         return;
     }
 
-    MediaItem mediaItem = AudioServiceBackground.mediaItem as MediaItem;
-
-    _audioPlayer.play(_getMediaPlayPath(mediaItem), isLocal: true);
-  } // end method onPlay
-
-  @override
-  Future<void> onSkipToNext() async {
-    MediaItem? nextSong;
-
-    if (AudioServiceBackground.mediaItem == null) {
-      if (_queue.length != 0) nextSong = _queue[0];
-    } else {
-      var mediaItem = AudioServiceBackground.mediaItem as MediaItem;
-      if (_queue.length == 0) {
-        nextSong = null;
-      } else {
-        int index = _queue.indexWhere((song) => song.id == mediaItem.id);
-        int nextIndex;
-        nextIndex = (index + 1);
-        nextIndex %= _queue.length;
-        nextSong = _queue[nextIndex];
-      }
-    }
-
-    if (nextSong == null) return;
-
-    await AudioServiceBackground.setMediaItem(nextSong);
-    return AudioService.play();
+    _audioPlayer.resume();
+    _playing = true;
+    _setState(processingState: AudioProcessingState.none);
   }
 
   @override
-  Future<void> onSkipToPrevious() async {
-    MediaItem? nextSong;
+  Future<void> onPlayFromMediaId(String mediaId) async {
+    MediaItem? mediaItem =
+        _queue.firstWhereOrNull((element) => element.id == mediaId);
 
-    MediaItem? mediaItem = AudioServiceBackground.mediaItem;
+    if (mediaItem == null) return;
 
-    if (mediaItem == null) {
-      if (_queue.length != 0) nextSong = _queue[0];
+    int result =
+        await _audioPlayer.play(_getMediaPlayPath(mediaItem), isLocal: true);
+
+    if (result == 1) {
+      AudioServiceBackground.setMediaItem(mediaItem);
+      _playing = true;
+      _setState();
     } else {
-      int index = _queue.indexWhere((song) => song.id == mediaItem.id);
-      if (index == -1) {
-        nextSong = _queue[0];
-      } else {
-        int nextIndex = (index - 1);
-        if (nextIndex < 0) {
-          nextIndex = _queue.length + nextIndex;
-        }
-        nextSong = _queue[nextIndex];
-      }
+      _playing = false;
+      _setState();
     }
+  } //end method onPlayFromMediaId
 
-    if (nextSong == null) return;
-    await AudioServiceBackground.setMediaItem(nextSong);
-    return AudioService.play();
-  } //end method onSkipToPrevious
+  @override
+  Future<void> onSkipToQueueItem(String mediaId) async {
+    return onPlayFromMediaId(mediaId);
+  } // end method onPlay
 
   Future<void> _setState(
-      { AudioProcessingState? processingState,
-        Duration? position,
-        Duration? bufferedPosition}) async {
+      {AudioProcessingState? processingState, Duration? position}) async {
     await AudioServiceBackground.setState(
       controls: getControls(),
       systemActions: [MediaAction.seekTo],
-      processingState: processingState ?? AudioServiceBackground.state.processingState,
+      processingState: processingState ?? AudioProcessingState.none,
       playing: _playing,
       position: position,
-      // bufferedPosition,
       // speed,
       // updateTime,
       // androidCompactActions,
       // repeatMode,
       // shuffleMode,
     );
-  }//end method _setState
+  } //end method _setState
 
-List<MediaControl> getControls() {
-    if(_playing){
+  List<MediaControl> getControls() {
+    if (_playing) {
       return [
-        skipToPreviousControl,
-        pauseControl,
-        stopControl,
-        skipToNextControl
+        MediaControl.skipToPrevious,
+        MediaControl.pause,
+        MediaControl.skipToNext,
+        MediaControl.stop,
+
       ];
-    }else {
+    } else {
       return [
-        skipToPreviousControl,
-        playControl,
-        stopControl,
-        skipToNextControl
+        MediaControl.skipToPrevious,
+        MediaControl.play,
+        MediaControl.skipToNext,
+        MediaControl.stop,
+
       ];
     }
-}//end method getControls
+  } //end method getControls
 } //end class AudioPlayerTask

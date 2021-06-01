@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
           displayColor: Colors.white,
         ),
       ),
-      home:  AudioServiceWidget(child: HomeScreen()),
+      home:  HomeScreen(),
     );
   } //end build method
 } //end class MyApp
