@@ -48,276 +48,281 @@ class MusicDetailSheet extends StatelessWidget {
             ),
           ),
           SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Obx(() => FutureBuilder<ImageProvider>(
-                future:
-                    musicController.getAudioImage(musicController.currentSong.value),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.done) {
-                    return Container(
-                      height: 320,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5),
-                        image: DecorationImage(
-                          image: snapshot.data as ImageProvider,
-                          fit: BoxFit.fill,
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Obx(() => FutureBuilder<ImageProvider>(
+                  future:
+                      musicController.getAudioImage(musicController.currentSong.value),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.done) {
+                      return Container(
+                        // height: 320,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5),
+                          image: DecorationImage(
+                            image: snapshot.data as ImageProvider,
+                            fit: BoxFit.fill,
+                          ),
                         ),
-                      ),
-                    );
-                  } else {
-                    return Container(
-                      height: 320,
-                      width: double.infinity,
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          color: MyTheme.accentColor,
+                      );
+                    } else {
+                      return Container(
+                        // height: 320,
+                        width: double.infinity,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: MyTheme.accentColor,
+                          ),
                         ),
-                      ),
-                    );
-                  }
-                },
+                      );
+                    }
+                  },
+                ),
               ),
             ),
           ),
           SizedBox(height: 24),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Obx(() => Text(
-                          musicController.currentSong.value != null
-                              ? musicController.currentSong.value!.title
-                              : "",
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                              fontWeight: FontWeight.w500, fontSize: 24),
+          Container(
+            height: 350,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Obx(() => Text(
+                            musicController.currentSong.value != null
+                                ? musicController.currentSong.value!.title
+                                : "",
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontWeight: FontWeight.w500, fontSize: 24),
+                          ),
                         ),
                       ),
-                    ),
-                    SizedBox(width: 10),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.favorite_border_outlined,
-                            color: MyTheme.darkColorLight2),
-                        SizedBox(
-                          width: 10,
-                        ),
-                        Icon(Icons.tune_outlined,
-                            color: MyTheme.darkColorLight2),
-                      ],
-                    ),
-                  ],
-                ),
-                SizedBox(height: 7),
-                Obx(() => Text(
-                    musicController.currentSong.value != null
-                        ? musicController.currentSong.value!.artist
-                        : "",
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: MyTheme.darkColorLight2),
+                      SizedBox(width: 10),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.favorite_border_outlined,
+                              color: MyTheme.darkColorLight2),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Icon(Icons.tune_outlined,
+                              color: MyTheme.darkColorLight2),
+                        ],
+                      ),
+                    ],
                   ),
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                SliderTheme(
-                  data: SliderTheme.of(context).copyWith(
-                    trackHeight: 2,
-                    trackShape: _CustomTrackShape(),
+                  SizedBox(height: 7),
+                  Obx(() => Text(
+                      musicController.currentSong.value != null
+                          ? musicController.currentSong.value!.artist
+                          : "",
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(color: MyTheme.darkColorLight2),
+                    ),
                   ),
-                  child: Obx(() {
-                    int intMax =
-                        musicController.currentMaxTime.value.inMilliseconds;
-
-                    int intVal =
-                        musicController.currentPlayTime.value.inMilliseconds;
-
-                    if (intMax > 0) intVal %= intMax;
-
-                    double value = intVal.toDouble();
-                    double max = intMax.toDouble();
-
-                    return Slider(
-                        value: value,
-                        onChanged: (value) async {
-                          await musicController
-                              .seek(Duration(milliseconds: value.toInt()));
-                        },
-                        label: MyTimeUtils.convertDurationToTimeString(
-                            musicController.currentPlayTime.value),
-                        min: 0,
-                        max: max,
-                        activeColor: Colors.grey[300],
-                        inactiveColor: Colors.grey[700]);
-                  }),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Obx(() {
-                      int max =
+                  SizedBox(
+                    height: 10,
+                  ),
+                  SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      trackHeight: 2,
+                      trackShape: _CustomTrackShape(),
+                    ),
+                    child: Obx(() {
+                      int intMax =
                           musicController.currentMaxTime.value.inMilliseconds;
-                      int value =
+
+                      int intVal =
                           musicController.currentPlayTime.value.inMilliseconds;
 
-                      if (max > 0) value %= max;
-                      return Text(
-                        MyTimeUtils.convertDurationToTimeString(
-                            Duration(milliseconds: value)),
-                        style: TextStyle(
-                            fontWeight: FontWeight.w300,
-                            fontSize: 12,
-                            color: Colors.white,
-                            fontFeatures: [FontFeature.tabularFigures()]),
-                      );
-                    }),
-                    Obx(
-                      () => Text(
-                        MyTimeUtils.convertDurationToTimeString(
-                            musicController.currentMaxTime.value),
-                        style: TextStyle(
-                            fontWeight: FontWeight.w300,
-                            fontSize: 12,
-                            color: Colors.grey[400],
-                            fontFeatures: [FontFeature.tabularFigures()]),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 25),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Obx(() {
-                      IconData icon;
-                      Color? color;
-                      switch (musicController.repeatType) {
-                        case RepeatType.NO_REPEAT:
-                          icon = Icons.repeat;
-                          color = Colors.grey[500];
-                          break;
-                        case RepeatType.REPEAT_ALL:
-                          icon = Icons.repeat;
-                          color = Colors.grey[200];
-                          break;
-                        case RepeatType.REPEAT_ONE:
-                          icon = Icons.repeat_one_outlined;
-                          color = Colors.grey[200];
-                          break;
-                      }
+                      if (intMax > 0) intVal %= intMax;
 
-                      return IconButton(
-                          onPressed: () {
-                            musicController.toggleRepeat();
+                      double value = intVal.toDouble();
+                      double max = intMax.toDouble();
+
+                      return Slider(
+                          value: value,
+                          onChanged: (value) async {
+                            await musicController
+                                .seek(Duration(milliseconds: value.toInt()));
                           },
-                          icon: Icon(
-                            icon,
-                            color: color,
-                          ));
+                          label: MyTimeUtils.convertDurationToTimeString(
+                              musicController.currentPlayTime.value),
+                          min: 0,
+                          max: max,
+                          activeColor: Colors.grey[300],
+                          inactiveColor: Colors.grey[700]);
                     }),
-                    Center(
-                      child: Row(
-                        children: [
-                          GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTap: () {
-                              musicController.skipToPrevious();
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Obx(() {
+                        int max =
+                            musicController.currentMaxTime.value.inMilliseconds;
+                        int value =
+                            musicController.currentPlayTime.value.inMilliseconds;
+
+                        if (max > 0) value %= max;
+                        return Text(
+                          MyTimeUtils.convertDurationToTimeString(
+                              Duration(milliseconds: value)),
+                          style: TextStyle(
+                              fontWeight: FontWeight.w300,
+                              fontSize: 12,
+                              color: Colors.white,
+                              fontFeatures: [FontFeature.tabularFigures()]),
+                        );
+                      }),
+                      Obx(
+                        () => Text(
+                          MyTimeUtils.convertDurationToTimeString(
+                              musicController.currentMaxTime.value),
+                          style: TextStyle(
+                              fontWeight: FontWeight.w300,
+                              fontSize: 12,
+                              color: Colors.grey[400],
+                              fontFeatures: [FontFeature.tabularFigures()]),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 30),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Obx(() {
+                        IconData icon;
+                        Color? color;
+                        switch (musicController.repeatType) {
+                          case RepeatType.NO_REPEAT:
+                            icon = Icons.repeat;
+                            color = Colors.grey[500];
+                            break;
+                          case RepeatType.REPEAT_ALL:
+                            icon = Icons.repeat;
+                            color = Colors.grey[200];
+                            break;
+                          case RepeatType.REPEAT_ONE:
+                            icon = Icons.repeat_one_outlined;
+                            color = Colors.grey[200];
+                            break;
+                        }
+
+                        return IconButton(
+                            onPressed: () {
+                              musicController.toggleRepeat();
                             },
-                            child: Container(
-                              height: 40,
-                              width: 40,
-                              decoration: BoxDecoration(
-                                color: Colors.grey[200],
-                                shape: BoxShape.circle,
-                              ),
-                              child: Center(
-                                child: Icon(
-                                  Icons.skip_previous,
-                                  color: MyTheme.darkColorBlur,
+                            icon: Icon(
+                              icon,
+                              color: color,
+                            ));
+                      }),
+                      Center(
+                        child: Row(
+                          children: [
+                            GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () {
+                                musicController.skipToPrevious();
+                              },
+                              child: Container(
+                                height: 50,
+                                width: 50,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[200],
+                                  shape: BoxShape.circle,
                                 ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            width: 5,
-                          ),
-                          Container(
-                            height: 60,
-                            width: 60,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[200],
-                              shape: BoxShape.circle,
-                            ),
-                            child: Obx(
-                              () => GestureDetector(
-                                onTap: () async {
-                                  if (musicController.isPlaying.value) {
-                                    await musicController.pauseSong();
-                                  } else {
-                                    await musicController.resumeSong();
-                                  }
-                                },
                                 child: Center(
                                   child: Icon(
-                                    musicController.isPlaying.value
-                                        ? Icons.pause
-                                        : Icons.play_arrow,
+                                    Icons.skip_previous,
                                     color: MyTheme.darkColorBlur,
-                                    size: 40,
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          SizedBox(
-                            width: 5,
-                          ),
-                          GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTap: () {
-                              musicController.skipToNext();
-                            },
-                            child: Container(
-                              height: 40,
-                              width: 40,
+                            SizedBox(
+                              width: 5,
+                            ),
+                            Container(
+                              height: 80,
+                              width: 80,
                               decoration: BoxDecoration(
                                 color: Colors.grey[200],
                                 shape: BoxShape.circle,
                               ),
-                              child: Center(
-                                child: Icon(
-                                  Icons.skip_next,
-                                  color: MyTheme.darkColorBlur,
+                              child: Obx(
+                                () => GestureDetector(
+                                  onTap: () async {
+                                    if (musicController.isPlaying.value) {
+                                      await musicController.pauseSong();
+                                    } else {
+                                      await musicController.resumeSong();
+                                    }
+                                  },
+                                  child: Center(
+                                    child: Icon(
+                                      musicController.isPlaying.value
+                                          ? Icons.pause
+                                          : Icons.play_arrow,
+                                      color: MyTheme.darkColorBlur,
+                                      size: 45,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Obx(
-                      () => IconButton(
-                        onPressed: () {
-                          musicController.toggleShuffle();
-                        },
-                        icon: Icon(
-                          Icons.shuffle,
-                          color: Colors
-                              .grey[musicController.shuffle.value ? 200 : 500],
+                            SizedBox(
+                              width: 5,
+                            ),
+                            GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () {
+                                musicController.skipToNext();
+                              },
+                              child: Container(
+                                height: 50,
+                                width: 50,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[200],
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Center(
+                                  child: Icon(
+                                    Icons.skip_next,
+                                    color: MyTheme.darkColorBlur,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                      Obx(
+                        () => IconButton(
+                          onPressed: () {
+                            musicController.toggleShuffle();
+                          },
+                          icon: Icon(
+                            Icons.shuffle,
+                            color: Colors
+                                .grey[musicController.shuffle.value ? 200 : 500],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ],
