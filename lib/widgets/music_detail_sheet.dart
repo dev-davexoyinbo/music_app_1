@@ -85,7 +85,7 @@ class MusicDetailSheet extends StatelessWidget {
           ),
           SizedBox(height: 24),
           Container(
-            height: 350,
+            height: 340,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
