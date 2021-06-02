@@ -160,8 +160,24 @@ class AudioPlayerTask extends BackgroundAudioTask {
 
   @override
   Future<void> onSetRepeatMode(AudioServiceRepeatMode repeatMode) async {
-    _setState(repeatMode: repeatMode);
+    await _setState(repeatMode: repeatMode);
   } //end method onSetRepeatMode
+
+  @override
+  Future<void> onSetShuffleMode(AudioServiceShuffleMode shuffleMode) async {
+    if (AudioServiceBackground.queue != null) {
+      if (shuffleMode != AudioServiceShuffleMode.none) {
+        AudioServiceBackground.queue!.shuffle();
+      } else {
+        AudioServiceBackground.queue!
+            .sort((a, b) => a.title.toString().compareTo(b.title.toString()));
+      }
+
+      _updateQueue(AudioServiceBackground.queue!);
+    }
+
+    await _setState(shuffleMode: shuffleMode);
+  } //end method onSetShuffleMode
 
   @override
   Future<void> onPlayFromMediaId(String mediaId) async {
@@ -188,7 +204,8 @@ class AudioPlayerTask extends BackgroundAudioTask {
   Future<void> _setState(
       {AudioProcessingState? processingState,
       Duration? position,
-      AudioServiceRepeatMode? repeatMode}) async {
+      AudioServiceRepeatMode? repeatMode,
+      AudioServiceShuffleMode? shuffleMode}) async {
     await AudioServiceBackground.setState(
       controls: getControls(),
       systemActions: [MediaAction.seekTo],
@@ -199,7 +216,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
       // updateTime,
       // androidCompactActions,
       repeatMode: repeatMode ?? AudioServiceBackground.state.repeatMode,
-      // shuffleMode,
+      shuffleMode: shuffleMode ?? AudioServiceBackground.state.shuffleMode,
     );
   } //end method _setState
 

@@ -45,13 +45,14 @@ class MusicController extends GetxController {
       default:
         return RepeatType.NO_REPEAT;
     }
-  }
+  } //end get repeatType
 
   @override
   void onInit() async {
     super.onInit();
     // TODO:  find a better way to do this without broadcasting
-    _songsStream = _songsStreamController.stream.asBroadcastStream(onListen: (_) {
+    _songsStream =
+        _songsStreamController.stream.asBroadcastStream(onListen: (_) {
       _songsStreamController.sink.add(this.songs);
     }).distinct();
     AudioService.currentMediaItemStream.listen(_currentMediaItemLister);
@@ -80,7 +81,7 @@ class MusicController extends GetxController {
     await _updateQueue(songs.value);
 
     AudioService.setRepeatMode(
-        AudioServiceRepeatMode.all); // none/one/all/group
+        AudioServiceRepeatMode.none); // none/one/all/group
     AudioService.setShuffleMode(AudioServiceShuffleMode.none); // none/all/group
   } // end method onInit
 
@@ -88,6 +89,7 @@ class MusicController extends GetxController {
     isPlaying.value = state.playing;
 
     _audioRepeatMode.value = state.repeatMode;
+    shuffle.value = state.shuffleMode == AudioServiceShuffleMode.all;
   } //end method _playBackStateListener
 
   void _positionStreamListener(Duration duration) {
@@ -219,7 +221,7 @@ class MusicController extends GetxController {
     return AssetImage("assets/images/placeholder_image.jpg");
   }
 
-  Future<void> toggleRepeat() async{
+  Future<void> toggleRepeat() async {
     print("toggle repeat");
     var repeatModes = [
       AudioServiceRepeatMode.none,
@@ -231,38 +233,19 @@ class MusicController extends GetxController {
         (repeatModes.indexOf(_audioRepeatMode.value) + 1) % repeatModes.length;
 
     await AudioService.setRepeatMode(repeatModes[newIndex]);
-  }//end method toggleRepeat
+  } //end method toggleRepeat
 
   Future<void> stopSong() async {
     await AudioService.customAction(AudioPlayerTask.STOP_SONG);
-  }
+  }//end method stopSong
 
   Future<void> clearSong() async {
     await stopSong();
     currentSong.value = null;
-  }
+  }//end method clearSong
 
-  // old code
-  ////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////
-
-
-
-
-
-  void toggleShuffle() {
-    shuffle.value = !shuffle.value;
-    if (shuffle.value) {
-      _queue.shuffle();
-    } else {
-      _queue.sort((song1, song2) =>
-          song1.title.toLowerCase().compareTo(song2.title.toLowerCase()));
-    }
-  }
+  Future<void> toggleShuffle() async {
+    await AudioService.setShuffleMode(
+        shuffle.value ? AudioServiceShuffleMode.none : AudioServiceShuffleMode.all);
+  } //end method toggleShuffle
 } //end class MusicController
