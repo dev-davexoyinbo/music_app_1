@@ -50,7 +50,10 @@ class MusicController extends GetxController {
   @override
   void onInit() async {
     super.onInit();
-    _songsStream = _songsStreamController.stream.distinct();
+    // TODO:  find a better way to do this without broadcasting
+    _songsStream = _songsStreamController.stream.asBroadcastStream(onListen: (_) {
+      _songsStreamController.sink.add(this.songs);
+    }).distinct();
     AudioService.currentMediaItemStream.listen(_currentMediaItemLister);
     AudioService.queueStream.listen(_queueListener);
     AudioService.positionStream.listen(_positionStreamListener);
