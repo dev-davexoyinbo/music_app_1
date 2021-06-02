@@ -17,8 +17,7 @@ class MyApp extends StatelessWidget {
     // Get.put(MusicController());
     // Get.put(MainController());
     // Get.put(HomeController());
-
-  }
+  }// end constructor
 
 
 

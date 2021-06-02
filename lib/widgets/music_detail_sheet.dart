@@ -31,17 +31,18 @@ class MusicDetailSheet extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 12.0, left: 16, bottom: 4),
             child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: () {
                 mainController.displayMediaSheetAction(false);
               },
               child: Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.grey[300],
+                  color: MyTheme.darkColorBlur,
                 ),
                 child: Icon(
                   Icons.keyboard_arrow_down_outlined,
-                  color: MyTheme.darkColorBlur,
+                  color: Colors.grey[300],
                   size: 38,
                 ),
               ),
@@ -51,9 +52,10 @@ class MusicDetailSheet extends StatelessWidget {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Obx(() => FutureBuilder<ImageProvider>(
-                  future:
-                      musicController.getAudioImage(musicController.currentSong.value),
+              child: Obx(
+                () => FutureBuilder<ImageProvider>(
+                  future: musicController
+                      .getAudioImage(musicController.currentSong.value),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.done) {
                       return Container(
@@ -95,7 +97,8 @@ class MusicDetailSheet extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
-                        child: Obx(() => Text(
+                        child: Obx(
+                          () => Text(
                             musicController.currentSong.value != null
                                 ? musicController.currentSong.value!.title
                                 : "",
@@ -121,7 +124,8 @@ class MusicDetailSheet extends StatelessWidget {
                     ],
                   ),
                   SizedBox(height: 7),
-                  Obx(() => Text(
+                  Obx(
+                    () => Text(
                       musicController.currentSong.value != null
                           ? musicController.currentSong.value!.artist
                           : "",
@@ -169,8 +173,8 @@ class MusicDetailSheet extends StatelessWidget {
                       Obx(() {
                         int max =
                             musicController.currentMaxTime.value.inMilliseconds;
-                        int value =
-                            musicController.currentPlayTime.value.inMilliseconds;
+                        int value = musicController
+                            .currentPlayTime.value.inMilliseconds;
 
                         if (max > 0) value %= max;
                         return Text(
@@ -239,14 +243,23 @@ class MusicDetailSheet extends StatelessWidget {
                                 height: 50,
                                 width: 50,
                                 decoration: BoxDecoration(
-                                  color: Colors.grey[200],
+                                  color: MyTheme.darkColorBlur,
                                   shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: (Colors.grey[200] as Color)
+                                        .withOpacity(0.5),
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: (Colors.grey[200] as Color).withOpacity(0.6),
+                                      blurRadius: 2,
+                                    )
+                                  ],
                                 ),
                                 child: Center(
-                                  child: Icon(
-                                    Icons.skip_previous,
-                                    color: MyTheme.darkColorBlur,
-                                  ),
+                                  child: Icon(Icons.skip_previous,
+                                      // color: MyTheme.darkColorBlur,
+                                      color: Colors.grey[200]),
                                 ),
                               ),
                             ),
@@ -261,12 +274,22 @@ class MusicDetailSheet extends StatelessWidget {
                                   await musicController.resumeSong();
                                 }
                               },
+                              behavior: HitTestBehavior.opaque,
                               child: Container(
                                 height: 70,
                                 width: 70,
                                 decoration: BoxDecoration(
-                                  color: Colors.grey[200],
+                                  color: MyTheme.darkColorBlur,
                                   shape: BoxShape.circle,
+                                  border: Border.all(
+                                      color: (Colors.grey[200] as Color)
+                                          .withOpacity(0.5)),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: (Colors.grey[200] as Color).withOpacity(0.6),
+                                      blurRadius: 2,
+                                    )
+                                  ],
                                 ),
                                 child: Obx(
                                   () => Center(
@@ -274,7 +297,8 @@ class MusicDetailSheet extends StatelessWidget {
                                       musicController.isPlaying.value
                                           ? Icons.pause
                                           : Icons.play_arrow,
-                                      color: MyTheme.darkColorBlur,
+                                      // color: MyTheme.darkColorBlur,
+                                      color: Colors.grey[200],
                                       size: 40,
                                     ),
                                   ),
@@ -293,13 +317,22 @@ class MusicDetailSheet extends StatelessWidget {
                                 height: 50,
                                 width: 50,
                                 decoration: BoxDecoration(
-                                  color: Colors.grey[200],
-                                  shape: BoxShape.circle,
-                                ),
+                                    // color: Colors.grey[200],
+                                    color: MyTheme.darkColorBlur,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                        color: (Colors.grey[200] as Color).withOpacity(0.5)),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: (Colors.grey[200] as Color).withOpacity(0.6),
+                                        blurRadius: 2,
+                                      )
+                                    ]),
                                 child: Center(
                                   child: Icon(
                                     Icons.skip_next,
-                                    color: MyTheme.darkColorBlur,
+                                    // color: MyTheme.darkColorBlur,
+                                    color: Colors.grey[200],
                                   ),
                                 ),
                               ),
@@ -314,8 +347,8 @@ class MusicDetailSheet extends StatelessWidget {
                           },
                           icon: Icon(
                             Icons.shuffle,
-                            color: Colors
-                                .grey[musicController.shuffle.value ? 200 : 500],
+                            color: Colors.grey[
+                                musicController.shuffle.value ? 200 : 500],
                           ),
                         ),
                       ),
