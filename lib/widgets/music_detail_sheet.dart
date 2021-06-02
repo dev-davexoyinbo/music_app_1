@@ -63,7 +63,7 @@ class MusicDetailSheet extends StatelessWidget {
                           borderRadius: BorderRadius.circular(5),
                           image: DecorationImage(
                             image: snapshot.data as ImageProvider,
-                            fit: BoxFit.fill,
+                            fit: BoxFit.cover,
                           ),
                         ),
                       );
@@ -253,29 +253,29 @@ class MusicDetailSheet extends StatelessWidget {
                             SizedBox(
                               width: 5,
                             ),
-                            Container(
-                              height: 80,
-                              width: 80,
-                              decoration: BoxDecoration(
-                                color: Colors.grey[200],
-                                shape: BoxShape.circle,
-                              ),
-                              child: Obx(
-                                () => GestureDetector(
-                                  onTap: () async {
-                                    if (musicController.isPlaying.value) {
-                                      await musicController.pauseSong();
-                                    } else {
-                                      await musicController.resumeSong();
-                                    }
-                                  },
-                                  child: Center(
+                            GestureDetector(
+                              onTap: () async {
+                                if (musicController.isPlaying.value) {
+                                  await musicController.pauseSong();
+                                } else {
+                                  await musicController.resumeSong();
+                                }
+                              },
+                              child: Container(
+                                height: 70,
+                                width: 70,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[200],
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Obx(
+                                  () => Center(
                                     child: Icon(
                                       musicController.isPlaying.value
                                           ? Icons.pause
                                           : Icons.play_arrow,
                                       color: MyTheme.darkColorBlur,
-                                      size: 45,
+                                      size: 40,
                                     ),
                                   ),
                                 ),
