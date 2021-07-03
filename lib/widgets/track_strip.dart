@@ -43,7 +43,7 @@ class TrackStrip extends StatelessWidget {
 
                     return CircleAvatar(
                       backgroundImage: image,
-                      radius: 28,
+                      radius: 25,
                     );
                   },
                 ),
@@ -64,7 +64,7 @@ class TrackStrip extends StatelessWidget {
                                 ? MyTheme.accentColor
                                 : Colors.grey[200] as Color,
                             fontWeight: FontWeight.w500,
-                            fontSize: 16,
+                            fontSize: 15,
                           ),
                         ),
                       ),
@@ -79,7 +79,7 @@ class TrackStrip extends StatelessWidget {
                                 ? MyTheme.accentColor.withAlpha(200)
                                 : Colors.grey[400] as Color,
                             fontWeight: FontWeight.w300,
-                            fontSize: 14,
+                            fontSize: 13,
                           ),
                         ),
                       ),

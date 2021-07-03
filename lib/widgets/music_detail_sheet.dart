@@ -60,7 +60,7 @@ class MusicDetailSheet extends StatelessWidget {
               // ),
               child: Obx(
                 () => FutureBuilder<ImageProvider>(
-                  future: musicController.getAudioImage(musicController.currentSong.value),
+                  future: musicController.getAudioImage(musicController.currentSong.value, size: 800),
                   builder: (context, snapshot) {
                     if ((snapshot.connectionState == ConnectionState.done)) {
                       return Container(

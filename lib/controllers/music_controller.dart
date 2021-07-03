@@ -213,17 +213,14 @@ class MusicController extends GetxController {
       await OnAudioQuery().permissionsRequest();
   }
 
-  Future<ImageProvider> getAudioImage(SongModel? songModel) async {
+  Future<ImageProvider> getAudioImage(SongModel? songModel, {int? size}) async {
     Uint8List? uint8list;
     if (songModel != null && songModel.artwork == null) {
-      print("===========>Song model Id: ${songModel.id}");
       try{
         uint8list =
-        await OnAudioQuery().queryArtworks(songModel.id, ArtworkType.AUDIO);
+        await OnAudioQuery().queryArtworks(songModel.id, ArtworkType.AUDIO, ArtworkFormat.JPEG, size);
       }catch( error){
-        print("======================An error was caught=================");
         print(error.toString());
-        print("======================End Log=================");
       }
     }
 

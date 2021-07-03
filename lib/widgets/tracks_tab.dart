@@ -38,7 +38,7 @@ class _TracksTabState extends State<TracksTab> {
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: TrackStrip(
                           id: song.id,
-                          imageFuture: musicController.getAudioImage(song),
+                          imageFuture: musicController.getAudioImage(song, size: 100),
                           name: title,
                           artist: artist,
                           timeString: MyTimeUtils.convertDurationToTimeString(Duration(milliseconds: song.duration)),
