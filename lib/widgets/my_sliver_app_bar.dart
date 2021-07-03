@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:music_app_trial_1/controllers/home_controller.dart';
 import 'package:music_app_trial_1/my_theme.dart';
+import 'package:music_app_trial_1/pages/views/settings_page.dart';
 
 class MySliverAppBar extends StatefulWidget {
   late final TabController _tabController;
 
-  MySliverAppBar({Key? key, required TabController tabController}): super(key: key){
+  MySliverAppBar({Key? key, required TabController tabController})
+      : super(key: key) {
     this._tabController = tabController;
   }
 
@@ -38,9 +40,16 @@ class _MySliverAppBarState extends State<MySliverAppBar> {
         Container(
           margin: EdgeInsets.only(right: 10, left: 10),
           child: Icon(Icons.search),
-        ),Container(
+        ),
+        Container(
           margin: EdgeInsets.only(right: 10, left: 10),
-          child: Icon(Icons.manage_accounts_outlined),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+              onTap: () {
+                Get.toNamed("/settings");
+                // print("Going to the settings page");
+              },
+              child: Icon(Icons.manage_accounts_outlined)),
         ),
       ],
       flexibleSpace: FlexibleSpaceBar(
@@ -56,8 +65,7 @@ class _MySliverAppBarState extends State<MySliverAppBar> {
                 padding: const EdgeInsets.only(right: 50.0),
                 child: Text(
                   "Find the best music for your banger",
-                  style: TextStyle(
-                      fontSize: 28, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                 ),
               ),
               SizedBox(
@@ -77,12 +85,11 @@ class _MySliverAppBarState extends State<MySliverAppBar> {
                   //   borderRadius: BorderRadius.circular(100),
                   // )
                   enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.transparent, width: 0),
-                      borderRadius: BorderRadius.circular(25)
-                  ),
+                      borderSide:
+                          BorderSide(color: Colors.transparent, width: 0),
+                      borderRadius: BorderRadius.circular(25)),
                   focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: MyTheme.accentColor)
-                  ),
+                      borderSide: BorderSide(color: MyTheme.accentColor)),
                   // contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 0),
                 ),
               ),
