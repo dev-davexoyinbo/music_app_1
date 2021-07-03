@@ -52,12 +52,17 @@ class MusicDetailSheet extends StatelessWidget {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              // child: QueryArtworkWidget(
+              //   id: musicController.currentSong.value!.id,
+              //   type: ArtworkType.AUDIO,
+              //   artwork: musicController.currentSong.value!.artwork,
+              //   deviceInfo: await OnAudioQuery().queryDeviceInfo(),
+              // ),
               child: Obx(
                 () => FutureBuilder<ImageProvider>(
-                  future: musicController
-                      .getAudioImage(musicController.currentSong.value),
+                  future: musicController.getAudioImage(musicController.currentSong.value),
                   builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.done) {
+                    if ((snapshot.connectionState == ConnectionState.done)) {
                       return Container(
                         // height: 320,
                         width: double.infinity,
@@ -251,7 +256,8 @@ class MusicDetailSheet extends StatelessWidget {
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: (Colors.grey[200] as Color).withOpacity(0.6),
+                                      color: (Colors.grey[200] as Color)
+                                          .withOpacity(0.6),
                                       blurRadius: 2,
                                     )
                                   ],
@@ -286,7 +292,8 @@ class MusicDetailSheet extends StatelessWidget {
                                           .withOpacity(0.5)),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: (Colors.grey[200] as Color).withOpacity(0.6),
+                                      color: (Colors.grey[200] as Color)
+                                          .withOpacity(0.6),
                                       blurRadius: 2,
                                     )
                                   ],
@@ -321,10 +328,12 @@ class MusicDetailSheet extends StatelessWidget {
                                     color: MyTheme.darkColorBlur,
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                        color: (Colors.grey[200] as Color).withOpacity(0.5)),
+                                        color: (Colors.grey[200] as Color)
+                                            .withOpacity(0.5)),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: (Colors.grey[200] as Color).withOpacity(0.6),
+                                        color: (Colors.grey[200] as Color)
+                                            .withOpacity(0.6),
                                         blurRadius: 2,
                                       )
                                     ]),

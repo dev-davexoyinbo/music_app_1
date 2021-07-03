@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
@@ -77,8 +78,14 @@ class MusicController extends GetxController {
       print("Audio service is running");
     }
 
-    await _getSongs();
-    await _updateQueue(songs.value);
+    // await _getSongs();
+    // await _updateQueue(songs.value);
+
+
+    _getSongs()
+    .then((songs) async{
+      await _updateQueue(songs);
+    });
 
     AudioService.setRepeatMode(
         AudioServiceRepeatMode.none); // none/one/all/group
@@ -116,10 +123,10 @@ class MusicController extends GetxController {
     }
 
     _queue.value = mediaItems
-        ?.map((mediaItem) => songs.firstWhereOrNull(
+        !.map((mediaItem) => songs.firstWhereOrNull(
             (SongModel element) => element.id.toString() == mediaItem.id))
         .where((element) => element != null)
-        .toList() as List<SongModel>;
+        .toList().cast<SongModel>();
     print("Queue updated in controller: ${_queue.length}");
   } //end method _queueListener
 
@@ -127,7 +134,7 @@ class MusicController extends GetxController {
     return _songsStream;
   } //end method getSongsStream
 
-  Future<void> _getSongs() async {
+  Future<List<SongModel>> _getSongs() async {
     print("Getting all songs from device storage");
     await _requestPermission();
     List<SongModel> songs = await OnAudioQuery().querySongs();
@@ -136,6 +143,8 @@ class MusicController extends GetxController {
     this.songs.addAll(songs);
 
     _songsStreamController.sink.add(this.songs);
+
+    return Future.value(this.songs);
   } //end method _getSongs
 
   Future<void> _updateQueue(List<SongModel> songModels) async {
@@ -154,7 +163,7 @@ class MusicController extends GetxController {
         album: songModel.album,
         title: songModel.title,
         artist: songModel.artist,
-        duration: songModel.duration,
+        duration: songModel.duration.toString(),
         path: songModel.data);
   } //end method _convertSongModelToMediaItem
 
@@ -205,15 +214,21 @@ class MusicController extends GetxController {
   }
 
   Future<ImageProvider> getAudioImage(SongModel? songModel) async {
+    Uint8List? uint8list;
     if (songModel != null && songModel.artwork == null) {
-      var uint8list =
-          await OnAudioQuery().queryArtworks(songModel.id, ArtworkType.AUDIO);
-      if (uint8list == null) {
-        return Future.value(placeholderImage());
-      } else {
-        return Future.value(MemoryImage(uint8list));
+      print("===========>Song model Id: ${songModel.id}");
+      try{
+        uint8list =
+        await OnAudioQuery().queryArtworks(songModel.id, ArtworkType.AUDIO);
+      }catch( error){
+        print("======================An error was caught=================");
+        print(error.toString());
+        print("======================End Log=================");
       }
     }
+
+    if(uint8list != null)
+      return Future.value(MemoryImage(uint8list));
     return Future.value(placeholderImage());
   } //end method getAudioImage
 
