@@ -12,7 +12,7 @@ class PlayingWidgetSm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         // mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -54,7 +54,7 @@ class PlayingWidgetSm extends StatelessWidget {
                                 musicController.currentSong.value!.title,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 14,
                                   color: Colors.grey[300],
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -66,6 +66,7 @@ class PlayingWidgetSm extends StatelessWidget {
                                 style: TextStyle(
                                   color: Colors.grey[400],
                                   fontWeight: FontWeight.w300,
+                                  fontSize: 13
                                 ),
                               )),
                         ],
@@ -91,7 +92,7 @@ class PlayingWidgetSm extends StatelessWidget {
                         musicController.isPlaying.value
                             ? Icons.pause
                             : Icons.play_arrow,
-                        size: 32,
+                        size: 30,
                         color: Colors.grey[200]),
                   )),
               SizedBox(
@@ -103,7 +104,7 @@ class PlayingWidgetSm extends StatelessWidget {
                 },
                 child: Icon(
                   Icons.clear_outlined,
-                  size: 32,
+                  size: 30,
                   color: Colors.grey[200],
                 ),
               ),

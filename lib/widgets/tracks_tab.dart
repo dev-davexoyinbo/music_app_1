@@ -35,7 +35,7 @@ class _TracksTabState extends State<TracksTab> {
                         musicController.playSong(song);
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
                         child: TrackStrip(
                           id: song.id,
                           imageFuture: musicController.getAudioImage(song, size: 100),
